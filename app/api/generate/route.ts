@@ -11,6 +11,13 @@ const ratelimit = new Ratelimit({
 });
 
 const ALLOWED_TONES = ["バズ系", "真面目系", "恋愛系", "教育系"] as const;
+const MAX_INPUT_LENGTH = 1000;
+
+type AllowedTone = (typeof ALLOWED_TONES)[number];
+
+function isAllowedTone(value: string): value is AllowedTone {
+  return ALLOWED_TONES.includes(value as AllowedTone);
+}
 
 export async function POST(req: Request) {
   const apiKey = process.env.OPENAI_API_KEY;
@@ -44,6 +51,7 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
+
     const input = typeof body?.input === "string" ? body.input.trim() : "";
     const tone = typeof body?.tone === "string" ? body.tone.trim() : "";
 
@@ -54,14 +62,14 @@ export async function POST(req: Request) {
       );
     }
 
-    if (input.length > 1000) {
+    if (input.length > MAX_INPUT_LENGTH) {
       return NextResponse.json(
         { error: "入力が長すぎます" },
         { status: 400 }
       );
     }
 
-    if (!ALLOWED_TONES.includes(tone as (typeof ALLOWED_TONES)[number])) {
+    if (!isAllowedTone(tone)) {
       return NextResponse.json(
         { error: "tone の値が不正です" },
         { status: 400 }
@@ -103,26 +111,40 @@ Threadsで${tone}の投稿を作成してください。
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error("OpenAI API error:", response.status, errorText);
+      console.error("OpenAI API error:", response.status);
+
       return NextResponse.json(
         { error: "AI生成に失敗しました" },
-        { status: 502 }
+        {
+          status: 502,
+          headers: {
+            "X-RateLimit-Limit": String(limit),
+            "X-RateLimit-Remaining": String(remaining),
+            "X-RateLimit-Reset": String(reset),
+          },
+        }
       );
     }
 
     const data = await response.json();
     const result = data?.choices?.[0]?.message?.content;
 
-    if (!result) {
+    if (typeof result !== "string" || !result.trim()) {
       return NextResponse.json(
         { error: "AIの応答が空でした" },
-        { status: 502 }
+        {
+          status: 502,
+          headers: {
+            "X-RateLimit-Limit": String(limit),
+            "X-RateLimit-Remaining": String(remaining),
+            "X-RateLimit-Reset": String(reset),
+          },
+        }
       );
     }
 
     return NextResponse.json(
-      { result },
+      { result: result.trim() },
       {
         headers: {
           "X-RateLimit-Limit": String(limit),
@@ -131,11 +153,19 @@ Threadsで${tone}の投稿を作成してください。
         },
       }
     );
-  } catch (error) {
-    console.error("Route error:", error);
+  } catch {
+    console.error("Route error occurred");
+
     return NextResponse.json(
       { error: "サーバーエラー発生" },
-      { status: 500 }
+      {
+        status: 500,
+        headers: {
+          "X-RateLimit-Limit": String(limit),
+          "X-RateLimit-Remaining": String(remaining),
+          "X-RateLimit-Reset": String(reset),
+        },
+      }
     );
   }
 }
