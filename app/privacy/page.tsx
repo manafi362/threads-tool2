@@ -55,15 +55,23 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="mb-2 text-xl font-semibold">5. パーソナライズ広告の無効化</h2>
-          <p>
-            ユーザーは広告設定により、パーソナライズ広告を無効化できます。
-          </p>
-          <p>
-            また、提携する第三者配信事業者によるCookieの利用についても、
-            各事業者が提供するオプトアウト手段を利用できます。
-          </p>
-        </section>
+  <h2 className="mb-2 text-xl font-semibold">
+    5. パーソナライズ広告の無効化
+  </h2>
+
+  <p>
+    ユーザーは広告設定により、パーソナライズ広告を無効化できます。
+  </p>
+
+  <p>
+    Googleの広告におけるパーソナライズ広告は、Googleの広告設定から無効にできます。
+  </p>
+
+  <p>
+    また、www.aboutads.info にアクセスすることで、第三者配信事業者の
+    パーソナライズ広告を無効にすることもできます。
+  </p>
+</section>
 
         <section>
           <h2 className="mb-2 text-xl font-semibold">6. 免責事項</h2>
