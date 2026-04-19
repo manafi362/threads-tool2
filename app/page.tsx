@@ -120,64 +120,93 @@ const handleShareThreads = () => {
      {loading ? "文章を考え中..." : "生成する"}
     </button>
 
-    {result && (
+        {result && (
       <div style={{ marginTop: "30px" }}>
         <div
-  onClick={handleCopy}
-  style={{
-    backgroundColor: "#fafafa",
-    padding: "15px",
-    borderRadius: "10px",
-    cursor: "pointer",
-    whiteSpace: "pre-wrap",
-    border: "1px solid #eee",
-    lineHeight: "1.4",
-    fontSize: "15px",
-    letterSpacing: "0.02em",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-  }}
->
-  {result}
-</div>
+          onClick={handleCopy}
+          style={{
+            backgroundColor: "#fafafa",
+            padding: "15px",
+            borderRadius: "10px",
+            cursor: "pointer",
+            whiteSpace: "pre-wrap",
+            border: "1px solid #eee",
+            lineHeight: "1.4",
+            fontSize: "15px",
+            letterSpacing: "0.02em",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+          }}
+        >
+          {result}
+        </div>
 
         <div style={{ display: "flex", gap: "10px", marginTop: "15px" }}>
           <button
-  onClick={handleCopy}
-  style={{
-    marginTop: "10px",
-    padding: "8px 16px",
-    backgroundColor: copied ? "#4caf50" : "#333",
-    color: "white",
-    border: "none",
-    borderRadius: "5px",
-    transform: "scale(1)",
-    transition: "0.2s"
-  }}
-  onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
-  onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
->
+            onClick={handleCopy}
+            style={{
+              marginTop: "10px",
+              padding: "8px 16px",
+              backgroundColor: copied ? "#4caf50" : "#333",
+              color: "white",
+              border: "none",
+              borderRadius: "5px",
+              transform: "scale(1)",
+              transition: "0.2s"
+            }}
+            onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
+            onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
+          >
             {copied ? "コピー完了" : "コピー"}
           </button>
 
           <button
-  onClick={handleShareThreads}
-  style={{
-    marginTop: "10px",
-    padding: "8px 16px",
-    backgroundColor: "#000",
-    color: "white",
-    borderRadius: "5px",
-    transform: "scale(1)",
-    transition: "0.2s"
-  }}
-  onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
-  onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
->
-  Threadsで投稿する 🚀
-</button>
+            onClick={handleShareThreads}
+            style={{
+              marginTop: "10px",
+              padding: "8px 16px",
+              backgroundColor: "#000",
+              color: "white",
+              borderRadius: "5px",
+              transform: "scale(1)",
+              transition: "0.2s"
+            }}
+            onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
+            onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
+          >
+            Threadsで投稿する 🚀
+          </button>
         </div>
       </div>
     )}
+
+    <section
+      style={{
+        marginTop: "30px",
+        padding: "20px",
+        borderRadius: "16px",
+        backgroundColor: "#fafafa",
+        border: "1px solid #eee",
+        lineHeight: "1.8",
+      }}
+    >
+      <h2 style={{ fontSize: "20px", marginBottom: "12px" }}>
+        このツールでできること
+      </h2>
+      <ul style={{ paddingLeft: "20px", margin: 0 }}>
+        <li>Threads投稿のアイデアをすばやく作成できます</li>
+        <li>ネタ切れのときでも投稿文のたたき台を作れます</li>
+        <li>初心者でも使いやすいシンプルな無料ツールです</li>
+      </ul>
+
+      <h2 style={{ fontSize: "20px", margin: "24px 0 12px" }}>
+        使い方
+      </h2>
+      <ol style={{ paddingLeft: "20px", margin: 0 }}>
+        <li>1. 投稿したいテーマや内容を入力します</li>
+        <li>2. 文体を選んで生成ボタンを押します</li>
+        <li>3. 気に入った文章をコピーしてThreadsに投稿します</li>
+      </ol>
+    </section>
   </div>
 </div>
   );
