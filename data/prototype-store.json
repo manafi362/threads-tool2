@@ -1,0 +1,43 @@
+{
+  "tenantName": "Acme Support",
+  "tenantToken": "tenant_demo_01",
+  "serviceDomain": "http://127.0.0.1:3000",
+  "crawl": {
+    "targetUrl": "http://127.0.0.1:3000/site-guide",
+    "mode": "page",
+    "status": "succeeded",
+    "lastRunAt": "2026-04-23T00:00:00.000Z",
+    "lastError": null
+  },
+  "billing": {
+    "email": "tsun81010koro788@gmail.com",
+    "customerId": "cus_UOPAs4pZ9KTWVu",
+    "subscriptionId": "sub_1TPcOkRrlMEK5HNBfE6gidyM",
+    "plan": "growth",
+    "status": "active",
+    "currentPeriodEnd": "2026-05-24T05:35:28.000Z",
+    "lastCheckoutAt": "2026-04-24T06:00:05.344Z",
+    "lastWebhookEventId": "evt_1TPcYmRrlMEK5HNB1vaN4mV7",
+    "lastWebhookAt": "2026-04-24T05:45:53.445Z"
+  },
+  "widget": {
+    "displayName": "サポートチャット",
+    "accentColor": "#0f766e",
+    "welcomeMessage": "こんにちは。サイトについて知りたいことを聞いてください。",
+    "positionPreset": "bottom-right",
+    "x": 24,
+    "y": 24
+  },
+  "crawledPages": [
+    {
+      "id": "aHR0cDovLzEyNy4wLjAuMTozMDAwL3NpdGUtZ3VpZGU",
+      "url": "http://127.0.0.1:3000/site-guide",
+      "title": "Site Guide | Threads Tool",
+      "excerpt": "Threads Tool を試すための説明ページ。URL クロール、チャット回答、ウィジェット設定、埋め込みコード再利用を確認できます。",
+      "content": "Threads Tool は、URL をクロールして内容に答えるチャットウィジェットを試せるプロトタイプです。URL を入力してページ本文をクロールできます。クロールした内容をもとにチャット形式で質問へ回答できます。チャットウィジェットの名前、色、初期メッセージ、表示位置を調整できます。生成された埋め込みコードを別サイトへ貼って再利用できます。試し方は、ダッシュボードでこのページの URL をクロール対象にし、クロール完了後にプレビューか埋め込みウィジェットから質問します。",
+      "depth": 0,
+      "crawledAt": "2026-04-23T00:00:00.000Z"
+    }
+  ],
+  "conversations": []
+}

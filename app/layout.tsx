@@ -1,61 +1,86 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import Link from "next/link";
-import Script from "next/script";
+
+import { signOutAction } from "./actions/auth";
+import { getOptionalUser } from "../lib/auth";
+
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "Threads投稿作成ツール | 無料で使える投稿生成アプリ",
+  title: "URLベース チャットボット",
   description:
-    "Threads投稿文を自動生成。ネタ切れ防止、時短、初心者向けの無料ツールです。",
+    "URL を読み込んで内容に答えるチャットボットを販売・運用するためのプロトタイプです。",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const user = await getOptionalUser();
+
   return (
-    <html
-      lang="ja"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <head>
-        <Script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9073784290240075"
-          crossOrigin="anonymous"
-          strategy="afterInteractive"
-        />
-      </head>
-
-      <body className="min-h-full flex flex-col bg-white text-black">
-        <main className="flex-1">{children}</main>
-
-        <footer className="border-t border-gray-200 px-6 py-6 text-sm text-gray-600">
-          <div className="mx-auto flex max-w-5xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p>© 2026 Threads投稿作成ツール</p>
-            <nav className="flex gap-4">
-              <Link href="/privacy" className="hover:underline">
-                プライバシーポリシー
+    <html lang="ja" className="h-full antialiased">
+      <body className="min-h-full bg-white text-slate-950">
+        <div className="flex min-h-screen flex-col">
+          <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/90 backdrop-blur">
+            <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 lg:px-8">
+              <Link href="/" className="text-lg font-semibold tracking-tight text-slate-950">
+                URLベース チャットボット
               </Link>
-              <Link href="/contact" className="hover:underline">
-                お問い合わせ
-              </Link>
-            </nav>
-          </div>
-        </footer>
+              <nav className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
+                <Link href="/" className="transition hover:text-slate-950">
+                  Home
+                </Link>
+                <Link href="/dashboard" className="transition hover:text-slate-950">
+                  Dashboard
+                </Link>
+                <Link href="/site-guide" className="transition hover:text-slate-950">
+                  Site Guide
+                </Link>
+                <Link href="/account" className="transition hover:text-slate-950">
+                  Account
+                </Link>
+                <Link href="/setup" className="transition hover:text-slate-950">
+                  Setup
+                </Link>
+                <Link href="/privacy" className="transition hover:text-slate-950">
+                  Privacy
+                </Link>
+                <Link href="/contact" className="transition hover:text-slate-950">
+                  Contact
+                </Link>
+                {user ? (
+                  <form action={signOutAction}>
+                    <button
+                      type="submit"
+                      className="rounded-full border border-slate-300 px-4 py-2 font-medium text-slate-800 transition hover:bg-slate-50"
+                    >
+                      Sign out
+                    </button>
+                  </form>
+                ) : (
+                  <Link
+                    href="/login"
+                    className="rounded-full bg-slate-950 px-4 py-2 font-medium text-white transition hover:bg-slate-800"
+                  >
+                    Login
+                  </Link>
+                )}
+              </nav>
+            </div>
+          </header>
+
+          <main className="flex-1">{children}</main>
+
+          <footer className="border-t border-slate-200 bg-white px-6 py-6 text-sm text-slate-600">
+            <div className="mx-auto flex max-w-7xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p>© 2026 URLベース チャットボット</p>
+              <p>URL クロール、チャット回答、Stripe 課金までをまとめた販売向けプロトタイプ</p>
+            </div>
+          </footer>
+        </div>
 
         <Analytics />
       </body>
