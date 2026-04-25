@@ -48,6 +48,9 @@ export default async function RootLayout({
                 <Link href="/privacy" className="transition hover:text-slate-950">
                   Privacy
                 </Link>
+                <Link href="/legal" className="transition hover:text-slate-950">
+                  特商法表記
+                </Link>
                 <Link href="/contact" className="transition hover:text-slate-950">
                   Contact
                 </Link>
