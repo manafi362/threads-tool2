@@ -8,8 +8,6 @@ import { PrototypeState, createDefaultState } from "./prototype";
 const storePath = path.join(process.cwd(), "data", "prototype-store.json");
 
 async function ensureStore() {
-  await mkdir(path.dirname(storePath), { recursive: true });
-
   try {
     const raw = await readFile(storePath, "utf8");
     const parsed = JSON.parse(raw) as PrototypeState;
@@ -32,7 +30,7 @@ async function ensureStore() {
     };
   } catch {
     const initial = createDefaultState();
-    await writeFile(storePath, JSON.stringify(initial, null, 2), "utf8");
+    await tryWriteState(initial);
     return initial;
   }
 }
@@ -42,8 +40,7 @@ export async function readState() {
 }
 
 export async function writeState(state: PrototypeState) {
-  await mkdir(path.dirname(storePath), { recursive: true });
-  await writeFile(storePath, JSON.stringify(state, null, 2), "utf8");
+  await tryWriteState(state);
   return state;
 }
 
@@ -54,4 +51,25 @@ export async function updateState(
   const next = await updater(current);
   await writeState(next);
   return next;
+}
+
+async function tryWriteState(state: PrototypeState) {
+  try {
+    await mkdir(path.dirname(storePath), { recursive: true });
+    await writeFile(storePath, JSON.stringify(state, null, 2), "utf8");
+  } catch (error) {
+    if (isReadonlyFilesystemError(error)) {
+      return;
+    }
+
+    throw error;
+  }
+}
+
+function isReadonlyFilesystemError(error: unknown) {
+  return (
+    error instanceof Error &&
+    "code" in error &&
+    (error.code === "EROFS" || error.code === "EPERM" || error.code === "EACCES")
+  );
 }
