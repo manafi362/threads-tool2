@@ -73,33 +73,33 @@ export default async function HomePage() {
         <div className="space-y-6">
           <div className="rounded-[36px] border border-white/70 bg-white/85 p-6 shadow-[0_22px_60px_rgba(15,23,42,0.08)]">
             <div className="rounded-[28px] bg-slate-950 p-5 text-white">
-              <p className="text-xs uppercase tracking-[0.22em] text-teal-300">公開までの流れ</p>
+              <p className="text-xs uppercase tracking-[0.22em] text-teal-300">導入の流れ</p>
               <ul className="mt-4 space-y-3 text-sm leading-7 text-slate-200">
-                <li>1. Supabase で Google ログインを有効にする</li>
-                <li>2. Stripe で Product / Price / Webhook を設定する</li>
-                <li>3. `npm run check:setup` で必要な環境変数を確認する</li>
-                <li>4. Vercel にデプロイして公開ドメインへつなぐ</li>
+                <li>1. あなたのサイトURLを登録する</li>
+                <li>2. 自動生成された回答内容を確認する</li>
+                <li>3. ウィジェットをサイトに埋め込む</li>
+                <li>4. そのまま公開して運用を始める</li>
               </ul>
             </div>
             <div className="mt-6 rounded-[28px] border border-slate-200 bg-slate-50 p-5">
-              <p className="text-sm font-semibold text-slate-900">現在の準備状況</p>
+              <p className="text-sm font-semibold text-slate-900">このサービスでできること</p>
               <div className="mt-4 grid gap-3">
                 <ReadinessRow
-                  label="ログイン"
-                  ready={hasAuth}
-                  readyText="Googleログインを利用できます。"
-                  missingText="Supabase の認証設定がまだ未完了です。"
-                />
-                <ReadinessRow
-                  label="課金"
-                  ready={hasBilling}
-                  readyText="Stripe のサブスク課金を利用できます。"
-                  missingText="Stripe の Price / Secret / Webhook を設定してください。"
-                />
-                <ReadinessRow
-                  label="デモURL"
+                  label="サイト専用の回答"
                   ready
-                  readyText="`/site-guide` から URL とチャットの流れを確認できます。"
+                  readyText="登録したURLの内容に沿って、利用者の質問へ自然に回答できます。"
+                  missingText=""
+                />
+                <ReadinessRow
+                  label="すぐ始められる料金プラン"
+                  ready
+                  readyText="Starter は 14日間無料トライアル付きで、小さく試してから始められます。"
+                  missingText=""
+                />
+                <ReadinessRow
+                  label="継続運用のしやすさ"
+                  ready
+                  readyText="Googleログイン、課金、会話ログ確認までまとまっているので運用に乗せやすい設計です。"
                   missingText=""
                 />
               </div>
