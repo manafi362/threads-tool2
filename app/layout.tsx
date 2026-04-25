@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   title: "URLベース チャットボット",
   description:
     "URL を読み込んで内容に答えるチャットボットを販売・運用するためのプロトタイプです。",
+  verification: {
+    google: "u5tcqf-H8kXnbZB6VVZvY8Fb0UnaAid2v6K1S0Ho2Dw",
+  },
 };
 
 export default async function RootLayout({
