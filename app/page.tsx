@@ -1,10 +1,10 @@
 import Link from "next/link";
 
-import BillingButton from "./components/billing-button";
-import GoogleSignIn from "./components/google-sign-in";
 import { getOptionalUser } from "../lib/auth";
 import { PLAN_CATALOG } from "../lib/billing";
 import { hasStripeEnv, hasSupabaseEnv } from "../lib/env";
+import BillingButton from "./components/billing-button";
+import GoogleSignIn from "./components/google-sign-in";
 
 export default async function HomePage() {
   const user = await getOptionalUser();
@@ -20,11 +20,11 @@ export default async function HomePage() {
             URLベース チャットボット SaaS
           </p>
           <h1 className="max-w-4xl text-5xl font-semibold tracking-tight text-slate-950 sm:text-6xl">
-            URLを読み込むだけで、サイト専用のチャットボットをすばやく公開
+            URLを登録するだけで、あなたのサイト専用チャットボットを公開できます。
           </h1>
           <p className="max-w-2xl text-base leading-8 text-slate-600">
-            URLクロール、チャット生成、Googleログイン、Stripeのサブスク課金までをまとめた、
-            そのまま販売導線にのせられるプロトタイプです。
+            URLクロール、チャット応答、Googleログイン、Stripe課金までをまとめた、サイトごとの導入に向いた
+            チャットボット運用プラットフォームです。
           </p>
 
           {user ? (
@@ -66,19 +66,19 @@ export default async function HomePage() {
           <div className="grid gap-4 sm:grid-cols-3">
             <Metric label="認証" value="Google OAuth" />
             <Metric label="課金" value="Stripe Checkout" />
-            <Metric label="導入" value="Widget Embed" />
+            <Metric label="導入" value="Widget 埋め込み" />
           </div>
         </div>
 
         <div className="space-y-6">
           <div className="rounded-[36px] border border-white/70 bg-white/85 p-6 shadow-[0_22px_60px_rgba(15,23,42,0.08)]">
             <div className="rounded-[28px] bg-slate-950 p-5 text-white">
-              <p className="text-xs uppercase tracking-[0.22em] text-teal-300">公開前チェック</p>
+              <p className="text-xs uppercase tracking-[0.22em] text-teal-300">公開までの流れ</p>
               <ul className="mt-4 space-y-3 text-sm leading-7 text-slate-200">
-                <li>1. Supabase で Google Provider を有効にする</li>
+                <li>1. Supabase で Google ログインを有効にする</li>
                 <li>2. Stripe で Product / Price / Webhook を設定する</li>
-                <li>3. `npm run check:setup` で不足している環境変数を確認する</li>
-                <li>4. Vercel にデプロイして公開ドメインをつなぐ</li>
+                <li>3. `npm run check:setup` で必要な環境変数を確認する</li>
+                <li>4. Vercel にデプロイして公開ドメインへつなぐ</li>
               </ul>
             </div>
             <div className="mt-6 rounded-[28px] border border-slate-200 bg-slate-50 p-5">
@@ -88,7 +88,7 @@ export default async function HomePage() {
                   label="ログイン"
                   ready={hasAuth}
                   readyText="Googleログインを利用できます。"
-                  missingText="Supabase の環境変数がまだ不足しています。"
+                  missingText="Supabase の認証設定がまだ未完了です。"
                 />
                 <ReadinessRow
                   label="課金"
@@ -99,7 +99,7 @@ export default async function HomePage() {
                 <ReadinessRow
                   label="デモURL"
                   ready
-                  readyText="`/site-guide` でURLとチャットの確認ができます。"
+                  readyText="`/site-guide` から URL とチャットの流れを確認できます。"
                   missingText=""
                 />
               </div>
@@ -111,16 +111,16 @@ export default async function HomePage() {
       <section className="mx-auto max-w-7xl px-4 py-8 lg:px-8">
         <div className="grid gap-6 lg:grid-cols-3">
           <ValueCard
-            title="すぐ売れる導線"
-            description="ログイン、URL登録、チャット、埋め込みまでがつながっているので、検証用SaaSとしてそのまま提案しやすい構成です。"
+            title="すぐ始められる導入"
+            description="ログイン、URL登録、チャット設定、埋め込みまでがつながっているので、小さく試してから本番運用へ進めます。"
           />
           <ValueCard
-            title="サブスク課金対応"
+            title="サブスク課金込み"
             description="Starter / Growth の料金プランを用意済みで、Stripe Checkout と Billing Portal から継続課金に進めます。"
           />
           <ValueCard
-            title="デモのまま確認しやすい"
-            description="`/site-guide` を使えば、URLを読み込ませてチャットが増える流れをその場で見せられます。"
+            title="デモのまま説明しやすい"
+            description="`/site-guide` を使えば、URLを登録してチャットが使える流れをその場で見せられます。"
           />
         </div>
       </section>
@@ -130,7 +130,7 @@ export default async function HomePage() {
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-teal-700">料金プラン</p>
             <h2 className="mt-2 text-4xl font-semibold tracking-tight text-slate-950">
-              そのまま販売に使える料金設計
+              そのまま公開に使える価格設計
             </h2>
           </div>
           {!hasAuth ? (
