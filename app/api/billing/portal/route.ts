@@ -1,9 +1,20 @@
 import { findOrCreateCustomer, getStripeServer } from "../../../../lib/billing";
 import { requireApiUser } from "../../../../lib/auth";
+import { checkRouteRateLimit } from "../../../../lib/route-rate-limit";
 import { assertSameOrigin } from "../../../../lib/security";
 
 export async function POST(request: Request) {
   try {
+    const rateLimited = checkRouteRateLimit(request, {
+      name: "billing-portal",
+      limit: 10,
+      windowMs: 10 * 60 * 1000,
+    });
+
+    if (rateLimited) {
+      return rateLimited;
+    }
+
     assertSameOrigin(request);
     const user = await requireApiUser();
 

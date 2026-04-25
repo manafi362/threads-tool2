@@ -4,20 +4,23 @@ import Stripe from "stripe";
 
 import { getStripeEnv } from "./env";
 
+export const STARTER_TRIAL_DAYS = 14;
+
 export const PLAN_CATALOG = {
   starter: {
     id: "starter",
     name: "Starter",
-    priceLabel: "¥4,980 / month",
-    description: "小規模サイト向け。まずは1サイトで販売を始めたいときの基本プランです。",
-    features: ["1サイトまで", "月3,000メッセージまで", "Google ログイン", "会話ログ確認"],
+    priceLabel: "¥4,980 / 月",
+    trialLabel: "14日間無料トライアル",
+    description: "まずは1サイトで素早く始めたい方向けのスタータープランです。",
+    features: ["1サイトまで", "月3,000メッセージまで", "Googleログイン", "会話ログ確認"],
   },
   growth: {
     id: "growth",
     name: "Growth",
-    priceLabel: "¥12,800 / month",
-    description: "複数案件や継続運用向け。より大きいトラフィックと提案に耐える上位プランです。",
-    features: ["5サイトまで", "月20,000メッセージまで", "請求管理ポータル", "優先サポート"],
+    priceLabel: "¥12,800 / 月",
+    description: "複数サイトの運用や継続的な改善まで見据えた上位プランです。",
+    features: ["5サイトまで", "月20,000メッセージまで", "Billing Portal", "優先サポート"],
   },
 } as const;
 
@@ -95,4 +98,15 @@ export function getPriceIdForPlan(plan: PlanId) {
   }
 
   return growthPriceId;
+}
+
+export async function isEligibleForStarterTrial(customerId: string) {
+  const stripe = getStripeServer();
+  const subscriptions = await stripe.subscriptions.list({
+    customer: customerId,
+    status: "all",
+    limit: 1,
+  });
+
+  return subscriptions.data.length === 0;
 }

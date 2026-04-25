@@ -1,12 +1,12 @@
 import BillingButton from "../components/billing-button";
-import { getBillingOverview, PLAN_CATALOG } from "../../lib/billing";
 import { requireUser } from "../../lib/auth";
+import { getBillingOverview, PLAN_CATALOG } from "../../lib/billing";
 import { hasStripeEnv } from "../../lib/env";
 import { readState } from "../../lib/store";
 
 export const metadata = {
-  title: "Account | URLベース チャットボット",
-  description: "料金プラン、Stripe 課金、請求ポータルを確認するアカウント画面です。",
+  title: "アカウント | URLベース チャットボット",
+  description: "料金プラン、Stripe課金、Billing Portal を確認できるアカウント画面です。",
 };
 
 export default async function AccountPage() {
@@ -20,11 +20,11 @@ export default async function AccountPage() {
     <main className="min-h-screen bg-[linear-gradient(180deg,_#f9fffe_0%,_#edf4f7_100%)] px-4 py-12">
       <div className="mx-auto max-w-6xl space-y-6">
         <section className="rounded-[32px] border border-white/70 bg-white/90 p-8 shadow-[0_20px_50px_rgba(15,23,42,0.08)]">
-          <p className="text-sm font-medium text-teal-700">Signed in as {user.email}</p>
-          <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-950">料金プランと請求管理</h1>
+          <p className="text-sm font-medium text-teal-700">ログイン中: {user.email}</p>
+          <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-950">料金プランと契約状況</h1>
           <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
             ここからサブスクを開始し、Stripe Billing Portal でカード情報や契約状況を管理できます。
-            Webhook で同期された契約状態もこのページに表示されます。
+            Webhook で反映された契約状態もこのページに表示されます。
           </p>
         </section>
 
@@ -33,16 +33,16 @@ export default async function AccountPage() {
             Stripe の環境変数がまだ不足しています。
             `STRIPE_SECRET_KEY`、`STRIPE_WEBHOOK_SECRET`、
             `STRIPE_PRICE_STARTER_MONTHLY`、`STRIPE_PRICE_GROWTH_MONTHLY`
-            を設定すると本番課金を有効化できます。
+            を設定してから本番課金を確認してください。
           </section>
         ) : null}
 
         <section className="grid gap-6 lg:grid-cols-3">
-          <StatusCard label="保存済みプラン" value={billing.plan ?? "未選択"} />
+          <StatusCard label="選択中プラン" value={billing.plan ?? "未選択"} />
           <StatusCard label="Webhook ステータス" value={billing.status} />
           <StatusCard
             label="次回更新日"
-            value={billing.currentPeriodEnd ? formatDate(billing.currentPeriodEnd) : "未同期"}
+            value={billing.currentPeriodEnd ? formatDate(billing.currentPeriodEnd) : "未反映"}
           />
         </section>
 
@@ -53,6 +53,11 @@ export default async function AccountPage() {
               className="rounded-[30px] border border-white/70 bg-white/90 p-6 shadow-[0_18px_45px_rgba(15,23,42,0.06)]"
             >
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-teal-700">{plan.name}</p>
+              {"trialLabel" in plan ? (
+                <p className="mt-3 inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                  {plan.trialLabel}
+                </p>
+              ) : null}
               <h2 className="mt-3 text-3xl font-semibold text-slate-950">{plan.priceLabel}</h2>
               <p className="mt-3 text-sm leading-7 text-slate-600">{plan.description}</p>
               <ul className="mt-5 space-y-2 text-sm leading-7 text-slate-700">
@@ -83,15 +88,15 @@ export default async function AccountPage() {
           <div className="mt-6 space-y-4">
             {subscriptions.length === 0 ? (
               <p className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-5 text-sm text-slate-600">
-                まだ契約はありません。上のプランから Checkout を開いて課金導線を確認してください。
+                まだ契約はありません。上のプランから Checkout を開いて課金確認を進めてください。
               </p>
             ) : (
               subscriptions.map((subscription) => (
                 <article key={subscription.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                   <p className="text-sm font-semibold text-slate-900">{subscription.id}</p>
-                  <p className="mt-2 text-sm text-slate-600">status: {subscription.status}</p>
+                  <p className="mt-2 text-sm text-slate-600">状態: {subscription.status}</p>
                   <p className="mt-1 text-sm text-slate-600">
-                    current period end:{" "}
+                    次回更新日:{" "}
                     {subscription.items.data[0]?.current_period_end
                       ? new Intl.DateTimeFormat("ja-JP", {
                           dateStyle: "medium",

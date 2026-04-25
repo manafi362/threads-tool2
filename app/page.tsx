@@ -2,8 +2,8 @@ import Link from "next/link";
 
 import BillingButton from "./components/billing-button";
 import GoogleSignIn from "./components/google-sign-in";
-import { PLAN_CATALOG } from "../lib/billing";
 import { getOptionalUser } from "../lib/auth";
+import { PLAN_CATALOG } from "../lib/billing";
 import { hasStripeEnv, hasSupabaseEnv } from "../lib/env";
 
 export default async function HomePage() {
@@ -17,14 +17,14 @@ export default async function HomePage() {
       <section className="mx-auto grid max-w-7xl gap-10 px-4 py-16 lg:grid-cols-[1.1fr_0.9fr] lg:px-8">
         <div className="space-y-6">
           <p className="inline-flex rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-teal-700">
-            Monetizable AI Support SaaS
+            URLベース チャットボット SaaS
           </p>
           <h1 className="max-w-4xl text-5xl font-semibold tracking-tight text-slate-950 sm:text-6xl">
-            URL を読み込むだけで、サイト専用のチャットボットを販売できる
+            URLを読み込むだけで、サイト専用のチャットボットをすばやく公開
           </h1>
           <p className="max-w-2xl text-base leading-8 text-slate-600">
-            URL クロール、チャット回答、埋め込みウィジェット、Google ログイン、
-            Stripe サブスク課金までを一つにまとめた販売向けプロトタイプです。
+            URLクロール、チャット生成、Googleログイン、Stripeのサブスク課金までをまとめた、
+            そのまま販売導線にのせられるプロトタイプです。
           </p>
 
           {user ? (
@@ -33,13 +33,13 @@ export default async function HomePage() {
                 href="/dashboard"
                 className="rounded-full bg-slate-950 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
               >
-                ダッシュボードを開く
+                ダッシュボードを見る
               </Link>
               <Link
                 href="/account"
                 className="rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-50"
               >
-                料金プランを見る
+                プランを見る
               </Link>
             </div>
           ) : hasAuth ? (
@@ -73,12 +73,12 @@ export default async function HomePage() {
         <div className="space-y-6">
           <div className="rounded-[36px] border border-white/70 bg-white/85 p-6 shadow-[0_22px_60px_rgba(15,23,42,0.08)]">
             <div className="rounded-[28px] bg-slate-950 p-5 text-white">
-              <p className="text-xs uppercase tracking-[0.22em] text-teal-300">Go Live Checklist</p>
+              <p className="text-xs uppercase tracking-[0.22em] text-teal-300">公開前チェック</p>
               <ul className="mt-4 space-y-3 text-sm leading-7 text-slate-200">
-                <li>1. Supabase で Google Provider を有効化する</li>
+                <li>1. Supabase で Google Provider を有効にする</li>
                 <li>2. Stripe で Product / Price / Webhook を設定する</li>
-                <li>3. `npm run check:setup` で不足する環境変数を確認する</li>
-                <li>4. Vercel にデプロイして独自ドメインをつなぐ</li>
+                <li>3. `npm run check:setup` で不足している環境変数を確認する</li>
+                <li>4. Vercel にデプロイして公開ドメインをつなぐ</li>
               </ul>
             </div>
             <div className="mt-6 rounded-[28px] border border-slate-200 bg-slate-50 p-5">
@@ -87,19 +87,19 @@ export default async function HomePage() {
                 <ReadinessRow
                   label="ログイン"
                   ready={hasAuth}
-                  readyText="Google ログインを有効化できます"
-                  missingText="Supabase の環境変数が不足しています"
+                  readyText="Googleログインを利用できます。"
+                  missingText="Supabase の環境変数がまだ不足しています。"
                 />
                 <ReadinessRow
                   label="課金"
                   ready={hasBilling}
-                  readyText="Stripe サブスク課金を開始できます"
-                  missingText="Stripe の Price / Secret / Webhook が不足しています"
+                  readyText="Stripe のサブスク課金を利用できます。"
+                  missingText="Stripe の Price / Secret / Webhook を設定してください。"
                 />
                 <ReadinessRow
                   label="デモURL"
                   ready
-                  readyText="`/site-guide` でクロールとチャットを試せます"
+                  readyText="`/site-guide` でURLとチャットの確認ができます。"
                   missingText=""
                 />
               </div>
@@ -111,16 +111,16 @@ export default async function HomePage() {
       <section className="mx-auto max-w-7xl px-4 py-8 lg:px-8">
         <div className="grid gap-6 lg:grid-cols-3">
           <ValueCard
-            title="すぐ売れる構成"
-            description="ログイン、URL 登録、チャット、埋め込みまでがつながっているので、受託・SaaS・社内導入のどれでも提案しやすい構成です。"
+            title="すぐ売れる導線"
+            description="ログイン、URL登録、チャット、埋め込みまでがつながっているので、検証用SaaSとしてそのまま提案しやすい構成です。"
           />
           <ValueCard
-            title="サブスク課金導線"
+            title="サブスク課金対応"
             description="Starter / Growth の料金プランを用意済みで、Stripe Checkout と Billing Portal から継続課金に進めます。"
           />
           <ValueCard
-            title="デモがそのまま営業資料"
-            description="`/site-guide` を使えば、URL を読み込ませてチャットが答える流れをその場で見せられます。"
+            title="デモのまま確認しやすい"
+            description="`/site-guide` を使えば、URLを読み込ませてチャットが増える流れをその場で見せられます。"
           />
         </div>
       </section>
@@ -128,14 +128,14 @@ export default async function HomePage() {
       <section className="mx-auto max-w-7xl px-4 py-14 lg:px-8">
         <div className="mb-8 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-teal-700">Pricing</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-teal-700">料金プラン</p>
             <h2 className="mt-2 text-4xl font-semibold tracking-tight text-slate-950">
-              そのまま販売に使える料金プラン
+              そのまま販売に使える料金設計
             </h2>
           </div>
           {!hasAuth ? (
             <p className="text-sm text-amber-700">
-              先に Supabase を設定すると、実ユーザー導線で課金テストできます。
+              先に Supabase を設定すると、ログイン付きで課金テストできます。
             </p>
           ) : null}
         </div>
@@ -147,6 +147,11 @@ export default async function HomePage() {
               className="rounded-[32px] border border-white/70 bg-white/90 p-6 shadow-[0_20px_55px_rgba(15,23,42,0.06)]"
             >
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-teal-700">{plan.name}</p>
+              {"trialLabel" in plan ? (
+                <p className="mt-3 inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                  {plan.trialLabel}
+                </p>
+              ) : null}
               <h3 className="mt-3 text-3xl font-semibold text-slate-950">{plan.priceLabel}</h3>
               <p className="mt-3 text-sm leading-7 text-slate-600">{plan.description}</p>
               <ul className="mt-5 space-y-2 text-sm leading-7 text-slate-700">
@@ -162,7 +167,7 @@ export default async function HomePage() {
                     href={user ? "/account" : "/login"}
                     className="inline-flex rounded-full bg-teal-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-teal-600"
                   >
-                    {user ? "アカウント画面で設定する" : "ログインして課金導線を有効化"}
+                    {user ? "アカウント画面で設定する" : "ログインして課金テストを始める"}
                   </Link>
                 )}
               </div>
@@ -203,7 +208,7 @@ function ReadinessRow({
             ready ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"
           }`}
         >
-          {ready ? "Ready" : "Setup Needed"}
+          {ready ? "準備完了" : "設定が必要"}
         </span>
       </div>
       <p className="mt-2 text-sm leading-6 text-slate-600">{ready ? readyText : missingText}</p>

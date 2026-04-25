@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { assertPaidAccess } from "../../../../lib/entitlements";
 import { UNKNOWN_ANSWER } from "../../../../lib/prototype";
 import { answerQuestion } from "../../../../lib/rag";
+import { checkRouteRateLimit } from "../../../../lib/route-rate-limit";
 import { readState, writeState } from "../../../../lib/store";
 
 const corsHeaders = {
@@ -25,6 +26,16 @@ export function OPTIONS() {
 }
 
 export async function POST(request: Request) {
+  const rateLimited = checkRouteRateLimit(request, {
+    name: "prototype-chat",
+    limit: 60,
+    windowMs: 60 * 1000,
+  });
+
+  if (rateLimited) {
+    return rateLimited;
+  }
+
   const payload = await parsePayload(request);
   const question = payload.question?.trim();
   const sessionId = payload.sessionId?.trim() || randomUUID();

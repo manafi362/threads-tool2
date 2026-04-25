@@ -25,6 +25,14 @@ export function getStripeEnv() {
   };
 }
 
+export function getSecurityEnv() {
+  return {
+    adminAllowedIps: readEnv("ADMIN_ALLOWED_IPS"),
+    adminBasicAuthUsername: readEnv("ADMIN_BASIC_AUTH_USERNAME"),
+    adminBasicAuthPassword: readEnv("ADMIN_BASIC_AUTH_PASSWORD"),
+  };
+}
+
 export function hasSupabaseEnv() {
   const { url, anonKey } = getSupabaseEnv();
   return Boolean(url && anonKey);

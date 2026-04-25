@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { requireApiUser } from "../../../../lib/auth";
+import { checkRouteRateLimit } from "../../../../lib/route-rate-limit";
 import { crawlSite } from "../../../../lib/crawler";
 import { assertPaidAccess } from "../../../../lib/entitlements";
 import {
@@ -30,6 +31,16 @@ const schema = z.object({
 
 export async function POST(request: Request) {
   try {
+    const rateLimited = checkRouteRateLimit(request, {
+      name: "prototype-crawl",
+      limit: 10,
+      windowMs: 60 * 60 * 1000,
+    });
+
+    if (rateLimited) {
+      return rateLimited;
+    }
+
     assertSameOrigin(request);
     await requireApiUser();
     const payload = schema.parse(await request.json());
