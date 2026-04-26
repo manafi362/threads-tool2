@@ -1,6 +1,6 @@
 import BillingButton from "../components/billing-button";
 import { requireUser } from "../../lib/auth";
-import { getBillingOverview, PLAN_CATALOG } from "../../lib/billing";
+import { getBillingOverview, PLAN_CATALOG, syncBillingStateForUser } from "../../lib/billing";
 import { hasStripeEnv } from "../../lib/env";
 import { createDefaultState } from "../../lib/prototype";
 import { readState } from "../../lib/store";
@@ -12,7 +12,9 @@ export const metadata = {
 
 export default async function AccountPage() {
   const user = await requireUser();
-  const prototypeState = await readState(user.id).catch(() => createDefaultState());
+  const fallbackState = createDefaultState();
+  const storedState = await readState(user.id).catch(() => fallbackState);
+  const prototypeState = await syncBillingStateForUser(user.id, user.email, storedState);
   const overview =
     hasStripeEnv() && user.email ? await getBillingOverview(user.email).catch(() => null) : null;
   const subscriptions = overview?.subscriptions ?? [];

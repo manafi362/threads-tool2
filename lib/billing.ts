@@ -3,6 +3,8 @@ import "server-only";
 import Stripe from "stripe";
 
 import { getStripeEnv } from "./env";
+import type { BillingState, BillingStatus, PrototypeState } from "./prototype";
+import { updateState } from "./store";
 
 export const STARTER_TRIAL_DAYS = 14;
 
@@ -82,6 +84,32 @@ export async function getBillingOverview(email: string) {
   };
 }
 
+export async function syncBillingStateForUser(
+  userId: string,
+  email: string | null | undefined,
+  fallbackState: PrototypeState,
+) {
+  if (!email) {
+    return fallbackState;
+  }
+
+  try {
+    const overview = await getBillingOverview(email);
+    const nextBilling = toBillingState(overview.subscriptions, fallbackState.billing, email);
+
+    if (isSameBillingState(fallbackState.billing, nextBilling)) {
+      return fallbackState;
+    }
+
+    return await updateState(userId, (current) => ({
+      ...current,
+      billing: nextBilling,
+    }));
+  } catch {
+    return fallbackState;
+  }
+}
+
 export function getPriceIdForPlan(plan: PlanId) {
   const { starterPriceId, growthPriceId } = getStripeEnv();
 
@@ -109,4 +137,70 @@ export async function isEligibleForStarterTrial(customerId: string) {
   });
 
   return subscriptions.data.length === 0;
+}
+
+function toBillingState(
+  subscriptions: Stripe.Subscription[],
+  fallback: BillingState,
+  email: string,
+): BillingState {
+  const subscription = pickPrimarySubscription(subscriptions);
+
+  if (!subscription) {
+    return {
+      ...fallback,
+      email,
+      status: "inactive",
+    };
+  }
+
+  return {
+    ...fallback,
+    email,
+    customerId: typeof subscription.customer === "string" ? subscription.customer : fallback.customerId,
+    subscriptionId: subscription.id,
+    plan: subscription.metadata.plan || subscription.items.data[0]?.price?.id || fallback.plan,
+    status: normalizeBillingStatus(subscription.status),
+    currentPeriodEnd: toIsoDate(subscription.items.data[0]?.current_period_end ?? null),
+  };
+}
+
+function pickPrimarySubscription(subscriptions: Stripe.Subscription[]) {
+  return [...subscriptions].sort((left, right) => {
+    const leftTime = left.items.data[0]?.current_period_end ?? 0;
+    const rightTime = right.items.data[0]?.current_period_end ?? 0;
+    return rightTime - leftTime;
+  })[0] ?? null;
+}
+
+function normalizeBillingStatus(status: Stripe.Subscription.Status): BillingStatus {
+  switch (status) {
+    case "trialing":
+      return "trialing";
+    case "active":
+      return "active";
+    case "past_due":
+    case "unpaid":
+      return "past_due";
+    case "canceled":
+    case "incomplete_expired":
+      return "canceled";
+    default:
+      return "inactive";
+  }
+}
+
+function toIsoDate(timestamp: number | null) {
+  return timestamp ? new Date(timestamp * 1000).toISOString() : null;
+}
+
+function isSameBillingState(left: BillingState, right: BillingState) {
+  return (
+    left.email === right.email &&
+    left.customerId === right.customerId &&
+    left.subscriptionId === right.subscriptionId &&
+    left.plan === right.plan &&
+    left.status === right.status &&
+    left.currentPeriodEnd === right.currentPeriodEnd
+  );
 }
