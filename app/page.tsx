@@ -18,9 +18,10 @@ export default async function HomePage() {
           <span className="hero-badge">URLベース チャットボット SaaS</span>
           <h1>URLを登録するだけで、あなたのサイト専用チャットボットを公開できます。</h1>
           <p className="hero-lead">
-            サイトURLを登録すると、内容に沿って回答する専用チャットボットを作成できます。
-            Googleログインで始められ、導入後の運用や課金管理までまとめて行えます。
+            サイトURLを登録すると、その内容に沿って回答する専用チャットボットを作成できます。
+            Googleログインから開始でき、導入後の運用や課金管理までひとつにまとまっています。
           </p>
+
           <div className="hero-actions">
             {user ? (
               <>
@@ -33,7 +34,7 @@ export default async function HomePage() {
               </>
             ) : authReady ? (
               <>
-                <GoogleSignIn />
+                <GoogleSignIn fullWidth={false} />
                 <Link className="secondary-button" href="/login">
                   ログインページへ
                 </Link>
@@ -49,6 +50,7 @@ export default async function HomePage() {
               </>
             )}
           </div>
+
           <div className="metric-grid">
             <Metric title="認証" value="Googleログイン" />
             <Metric title="課金" value="Stripe決済" />
@@ -96,27 +98,27 @@ export default async function HomePage() {
         />
         <ValueCard
           title="運用と見直しがしやすい"
-          body="課金管理や導入後の確認をまとめて行いやすく、継続運用にも向いています。"
+          body="課金管理や導入後の確認もまとめて行えるので、継続運用にも向いています。"
         />
       </section>
 
       <section className="pricing-section" id="pricing">
         <div className="section-copy">
           <span className="section-label">料金プラン</span>
-          <h2>目的に合わせて選べるシンプルな料金設計</h2>
+          <h2>用途に合わせて選べるシンプルな料金設計</h2>
           <p>
-            まずは無料トライアル付きの Starter から始めて、必要に応じて Growth へ拡張できます。
+            まずは無料トライアル付きの Starter から始めて、必要に応じて Growth へ移行できます。
           </p>
-          {!authReady && (
+          {!authReady ? (
             <p className="inline-note">
-              ログイン導線を有効にするには、Supabase の認証設定を完了してください。
+              ログイン開始には Supabase の認証設定が必要です。未設定なら Setup から確認できます。
             </p>
-          )}
+          ) : null}
         </div>
 
         <div className="plan-grid">
           {Object.values(PLAN_CATALOG).map((plan) => (
-            <article className="plan-card" key={plan.name}>
+            <article className="plan-card" key={plan.id}>
               <div>
                 <p className="plan-kicker">{plan.name.toUpperCase()}</p>
                 <h3>{plan.priceLabel}</h3>
@@ -131,7 +133,7 @@ export default async function HomePage() {
               {user && stripeReady ? (
                 <BillingButton
                   endpoint="/api/billing/checkout"
-                  plan={plan.name.toLowerCase() as "starter" | "growth"}
+                  plan={plan.id}
                   label={`${plan.name}を始める`}
                 />
               ) : user ? (

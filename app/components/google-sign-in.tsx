@@ -37,7 +37,7 @@ export default function GoogleSignIn({
         setLoading(false);
       }
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Google ログインに失敗しました。");
+      setError(caught instanceof Error ? caught.message : "Googleログインに失敗しました。");
       setLoading(false);
     }
   }

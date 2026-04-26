@@ -9,8 +9,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "URLベース チャットボット",
-  description:
-    "URL を読み込んで内容に答えるチャットボットを販売・運用するためのプロトタイプです。",
+  description: "URLを読み込んで内容に答えるチャットボットを販売・運用するためのアプリです。",
   verification: {
     google: "u5tcqf-H8kXnbZB6VVZvY8Fb0UnaAid2v6K1S0Ho2Dw",
   },
@@ -83,7 +82,7 @@ export default async function RootLayout({
           <footer className="border-t border-slate-200 bg-white px-6 py-6 text-sm text-slate-600">
             <div className="mx-auto flex max-w-7xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <p>© 2026 URLベース チャットボット</p>
-              <p>URL クロール、チャット回答、Stripe 課金までをまとめた販売向けプロトタイプ</p>
+              <p>URLクロール、チャット回答、Stripe課金までをまとめた販売向けアプリ</p>
             </div>
           </footer>
         </div>

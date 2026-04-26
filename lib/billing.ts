@@ -13,7 +13,7 @@ export const PLAN_CATALOG = {
     priceLabel: "¥4,980 / 月",
     trialLabel: "14日間無料トライアル",
     description: "まずは1サイトで素早く始めたい方向けのスタータープランです。",
-    features: ["1サイトまで", "月3,000メッセージまで", "Googleログイン", "会話ログ確認"],
+    features: ["1サイトまで", "月5,000メッセージまで", "Googleログイン", "会話ログ確認"],
   },
   growth: {
     id: "growth",
