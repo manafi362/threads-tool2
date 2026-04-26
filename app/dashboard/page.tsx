@@ -1,8 +1,10 @@
+import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 
 import Dashboard from "../components/dashboard";
 import { requireUser } from "../../lib/auth";
 import { syncBillingStateForUser } from "../../lib/billing";
+import { hasPaidAccess, shouldEnforceBilling } from "../../lib/entitlements";
 import { createDefaultState } from "../../lib/prototype";
 import { readState } from "../../lib/store";
 
@@ -16,6 +18,11 @@ export default async function DashboardPage() {
   const fallbackState = createDefaultState();
   const storedState = await readState(user.id).catch(() => fallbackState);
   const state = await syncBillingStateForUser(user.id, user.email, storedState);
+
+  if (shouldEnforceBilling() && !hasPaidAccess(state)) {
+    redirect("/account?reason=plan_required");
+  }
+
   const headerStore = await headers();
   const host = headerStore.get("x-forwarded-host") ?? headerStore.get("host");
   const protocol = headerStore.get("x-forwarded-proto") ?? "http";
