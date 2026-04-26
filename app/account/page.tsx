@@ -11,7 +11,7 @@ export const metadata = {
 
 export default async function AccountPage() {
   const user = await requireUser();
-  const prototypeState = await readState();
+  const prototypeState = await readState(user.id);
   const overview = hasStripeEnv() && user.email ? await getBillingOverview(user.email) : null;
   const subscriptions = overview?.subscriptions ?? [];
   const billing = prototypeState.billing;

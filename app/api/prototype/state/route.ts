@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     return rateLimited;
   }
 
-  await requireApiUser();
-  const state = await readState();
+  const user = await requireApiUser();
+  const state = await readState(user.id);
   return Response.json(state);
 }

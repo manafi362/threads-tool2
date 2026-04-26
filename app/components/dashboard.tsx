@@ -16,6 +16,13 @@ type PreviewMessage = {
   content: string;
 };
 
+type VerificationInstructions = {
+  metaTag: string;
+  filePath: string;
+  fileContents: string;
+  fileUrl: string;
+} | null;
+
 export default function Dashboard({ initialState }: DashboardProps) {
   const [state, setState] = useState(initialState);
   const [urlInput, setUrlInput] = useState(initialState.crawl.targetUrl);
@@ -28,7 +35,7 @@ export default function Dashboard({ initialState }: DashboardProps) {
   ]);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
-  const [busy, setBusy] = useState<"crawl" | "reset" | "chat" | null>(null);
+  const [busy, setBusy] = useState<"crawl" | "reset" | "chat" | "verify" | null>(null);
 
   useEffect(() => {
     const origin = window.location.origin;
@@ -47,6 +54,10 @@ export default function Dashboard({ initialState }: DashboardProps) {
     widget: widgetDraft,
   });
   const hasPaidAccess = state.billing.status === "active" || state.billing.status === "trialing";
+  const currentOrigin = parseOrigin(urlInput);
+  const hasVerifiedSite =
+    Boolean(currentOrigin) && state.siteVerification.verifiedOrigin === currentOrigin;
+  const verificationInstructions = getVerificationInstructions(state);
 
   async function handleCrawlSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -100,6 +111,43 @@ export default function Dashboard({ initialState }: DashboardProps) {
       resetPreview(next.widget.welcomeMessage);
     } catch {
       setError("初期状態へのリセットに失敗しました。");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function handleVerifySite() {
+    setError("");
+    setBusy("verify");
+
+    try {
+      const response = await fetch("/api/prototype/verify-site", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          url: urlInput,
+        }),
+      });
+
+      const data = (await response.json()) as
+        | {
+            state?: PrototypeState;
+            instructions?: VerificationInstructions;
+            error?: string;
+          }
+        | undefined;
+
+      if (!response.ok || !data?.state) {
+        setError(data?.error || "サイト所有確認に失敗しました。");
+        return;
+      }
+
+      setState(data.state);
+      setWidgetDraft(data.state.widget);
+    } catch {
+      setError("サイト所有確認中に通信エラーが発生しました。");
     } finally {
       setBusy(null);
     }
@@ -285,8 +333,16 @@ export default function Dashboard({ initialState }: DashboardProps) {
 
                 <div className="flex flex-wrap gap-3">
                   <button
-                    type="submit"
+                    type="button"
+                    onClick={() => void handleVerifySite()}
                     disabled={busy !== null}
+                    className="rounded-full bg-teal-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-teal-600 disabled:cursor-not-allowed disabled:bg-slate-400"
+                  >
+                    {busy === "verify" ? "所有確認中..." : "サイト所有確認"}
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={busy !== null || !hasVerifiedSite}
                     className="rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
                   >
                     {busy === "crawl" ? "クロール中..." : "クロールを実行"}
@@ -302,13 +358,70 @@ export default function Dashboard({ initialState }: DashboardProps) {
                 </div>
               </form>
 
-              <div className="grid gap-3 md:grid-cols-3">
+              <div className="grid gap-3 md:grid-cols-4">
+                <StatusCard label="所有確認" value={state.siteVerification.status} />
                 <StatusCard label="クロール状態" value={state.crawl.status} />
                 <StatusCard
                   label="最終実行"
                   value={state.crawl.lastRunAt ? formatDate(state.crawl.lastRunAt) : "未実行"}
                 />
                 <StatusCard label="エラー" value={state.crawl.lastError || "なし"} />
+              </div>
+
+              <div className="rounded-[28px] border border-slate-200 bg-white p-4">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-900">サイト所有確認</h3>
+                    <p className="mt-1 text-sm leading-6 text-slate-600">
+                      対象サイトの制作者だけがボットを公開できるように、同一オリジンへのトークン設置を確認します。
+                    </p>
+                  </div>
+                  <span
+                    className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                      hasVerifiedSite
+                        ? "bg-emerald-50 text-emerald-700"
+                        : "bg-amber-50 text-amber-700"
+                    }`}
+                  >
+                    {hasVerifiedSite ? "確認済み" : "未確認"}
+                  </span>
+                </div>
+
+                {currentOrigin ? (
+                  <p className="mt-3 break-all rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-700">
+                    対象オリジン: {currentOrigin}
+                  </p>
+                ) : (
+                  <p className="mt-3 rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                    まず有効な URL を入力してください。
+                  </p>
+                )}
+
+                {state.siteVerification.lastError ? (
+                  <p className="mt-3 rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                    {state.siteVerification.lastError}
+                  </p>
+                ) : null}
+
+                {verificationInstructions ? (
+                  <div className="mt-4 space-y-3">
+                    <p className="text-sm font-medium text-slate-700">
+                      次のどちらかを対象サイトに設置してから「サイト所有確認」を押してください。
+                    </p>
+                    <div className="rounded-2xl bg-slate-950 px-4 py-3 font-mono text-xs leading-6 text-emerald-200">
+                      {verificationInstructions.metaTag}
+                    </div>
+                    <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-700">
+                      検証ファイル: {verificationInstructions.filePath}
+                    </div>
+                    <div className="rounded-2xl bg-slate-950 px-4 py-3 font-mono text-xs leading-6 text-emerald-200">
+                      {verificationInstructions.fileContents}
+                    </div>
+                    <p className="break-all text-xs text-slate-500">
+                      取得確認URL: {verificationInstructions.fileUrl}
+                    </p>
+                  </div>
+                ) : null}
               </div>
 
               <div className="rounded-[28px] border border-slate-200 bg-slate-50/80 p-4">
@@ -476,18 +589,26 @@ export default function Dashboard({ initialState }: DashboardProps) {
               title="埋め込みコード"
               description="契約中のサイトへ設置する script タグです。"
             >
-              <textarea
-                readOnly
-                value={embedCode}
-                className="min-h-44 w-full rounded-3xl border border-slate-200 bg-slate-950 px-4 py-3 font-mono text-xs leading-6 text-emerald-200"
-              />
-              <button
-                type="button"
-                onClick={handleCopy}
-                className="rounded-full bg-teal-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-teal-600"
-              >
-                {copied ? "コピーしました" : "埋め込みコードをコピー"}
-              </button>
+              {hasVerifiedSite ? (
+                <>
+                  <textarea
+                    readOnly
+                    value={embedCode}
+                    className="min-h-44 w-full rounded-3xl border border-slate-200 bg-slate-950 px-4 py-3 font-mono text-xs leading-6 text-emerald-200"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleCopy}
+                    className="rounded-full bg-teal-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-teal-600"
+                  >
+                    {copied ? "コピーしました" : "埋め込みコードをコピー"}
+                  </button>
+                </>
+              ) : (
+                <div className="rounded-3xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm leading-7 text-amber-900">
+                  サイト所有確認が完了すると、このURL専用の埋め込みコードを表示できます。
+                </div>
+              )}
             </Panel>
 
             <Panel
@@ -759,4 +880,25 @@ function formatDate(value: string) {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
+}
+
+function parseOrigin(value: string) {
+  try {
+    return new URL(value).origin;
+  } catch {
+    return null;
+  }
+}
+
+function getVerificationInstructions(state: PrototypeState): VerificationInstructions {
+  if (!state.siteVerification.targetOrigin || !state.siteVerification.challengeToken) {
+    return null;
+  }
+
+  return {
+    metaTag: `<meta name="threads-tool-verification" content="${state.siteVerification.challengeToken}" />`,
+    filePath: "/.well-known/threads-tool-verification.txt",
+    fileContents: state.siteVerification.challengeToken,
+    fileUrl: `${state.siteVerification.targetOrigin}/.well-known/threads-tool-verification.txt`,
+  };
 }

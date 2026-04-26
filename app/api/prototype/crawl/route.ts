@@ -9,6 +9,7 @@ import {
   normalizeHexColor,
   type PrototypeState,
 } from "../../../../lib/prototype";
+import { buildSiteVerification, isVerifiedOwnerForOrigin } from "../../../../lib/site-verification";
 import { assertSameOrigin } from "../../../../lib/security";
 import { readState, writeState } from "../../../../lib/store";
 
@@ -42,11 +43,29 @@ export async function POST(request: Request) {
     }
 
     assertSameOrigin(request);
-    await requireApiUser();
+    const user = await requireApiUser();
     const payload = schema.parse(await request.json());
     const targetUrl = new URL(payload.url);
-    const state = await readState();
+    const state = await readState(user.id);
     assertPaidAccess(state);
+
+    if (!isVerifiedOwnerForOrigin(state, targetUrl.origin)) {
+      const nextVerification = buildSiteVerification(state, targetUrl.toString());
+      await writeState(
+        {
+          ...state,
+          siteVerification: {
+            ...nextVerification,
+            status: "pending",
+            verifiedOrigin: null,
+            verifiedAt: null,
+            lastError: "先にサイト所有確認を完了してください。",
+          },
+        },
+        user.id,
+      );
+      throw new Error("先にサイト所有確認を完了してください。");
+    }
 
     const runningState: PrototypeState = {
       ...state,
@@ -57,6 +76,7 @@ export async function POST(request: Request) {
         status: "running",
         lastError: null,
       },
+      siteVerification: buildSiteVerification(state, targetUrl.toString()),
       widget: payload.widget
         ? {
             ...state.widget,
@@ -70,7 +90,7 @@ export async function POST(request: Request) {
         : state.widget,
     };
 
-    await writeState(runningState);
+    await writeState(runningState, user.id);
 
     const { pages, warnings } = await crawlSite(targetUrl.toString(), payload.mode);
     const nextState: PrototypeState = {
@@ -84,7 +104,7 @@ export async function POST(request: Request) {
       },
     };
 
-    await writeState(nextState);
+    await writeState(nextState, user.id);
     return Response.json(nextState);
   } catch (error) {
     return Response.json(

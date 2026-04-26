@@ -10,8 +10,8 @@ export const metadata = {
 };
 
 export default async function DashboardPage() {
-  await requireUser();
-  const state = await readState();
+  const user = await requireUser();
+  const state = await readState(user.id);
   const headerStore = await headers();
   const host = headerStore.get("x-forwarded-host") ?? headerStore.get("host");
   const protocol = headerStore.get("x-forwarded-proto") ?? "http";

@@ -65,7 +65,7 @@ export async function POST(request: Request) {
         : undefined,
     });
 
-    await updateState((current) => ({
+    await updateState(user.id, (current) => ({
       ...current,
       billing: {
         ...current.billing,

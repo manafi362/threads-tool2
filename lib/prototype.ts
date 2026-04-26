@@ -16,6 +16,7 @@ export type WidgetPreset =
 
 export type CrawlStatus = "idle" | "running" | "succeeded" | "failed";
 export type BillingStatus = "inactive" | "trialing" | "active" | "past_due" | "canceled";
+export type SiteVerificationStatus = "unverified" | "pending" | "verified" | "failed";
 
 export type WidgetSettings = {
   displayName: string;
@@ -44,6 +45,16 @@ export type BillingState = {
   lastCheckoutAt: string | null;
   lastWebhookEventId: string | null;
   lastWebhookAt: string | null;
+};
+
+export type SiteVerificationState = {
+  status: SiteVerificationStatus;
+  challengeToken: string | null;
+  targetOrigin: string | null;
+  verifiedOrigin: string | null;
+  verifiedAt: string | null;
+  lastCheckedAt: string | null;
+  lastError: string | null;
 };
 
 export type CrawledPage = {
@@ -76,6 +87,7 @@ export type PrototypeState = {
   serviceDomain: string;
   crawl: CrawlConfig;
   billing: BillingState;
+  siteVerification: SiteVerificationState;
   widget: WidgetSettings;
   crawledPages: CrawledPage[];
   conversations: ConversationLog[];
@@ -104,6 +116,15 @@ export function createDefaultState(): PrototypeState {
       lastCheckoutAt: null,
       lastWebhookEventId: null,
       lastWebhookAt: null,
+    },
+    siteVerification: {
+      status: "unverified",
+      challengeToken: null,
+      targetOrigin: null,
+      verifiedOrigin: null,
+      verifiedAt: null,
+      lastCheckedAt: null,
+      lastError: null,
     },
     widget: {
       displayName: "サポートチャット",

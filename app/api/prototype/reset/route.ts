@@ -16,9 +16,9 @@ export async function POST(request: Request) {
     }
 
     assertSameOrigin(request);
-    await requireApiUser();
+    const user = await requireApiUser();
 
-    const next = await updateState((state) => ({
+    const next = await updateState(user.id, (state) => ({
       ...state,
       crawledPages: [],
       conversations: [],

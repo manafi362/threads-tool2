@@ -1,16 +1,13 @@
 import { randomUUID } from "node:crypto";
 
+import { getOptionalUser } from "../../../../lib/auth";
 import { assertPaidAccess } from "../../../../lib/entitlements";
+import type { PrototypeState } from "../../../../lib/prototype";
 import { UNKNOWN_ANSWER } from "../../../../lib/prototype";
 import { answerQuestion } from "../../../../lib/rag";
 import { checkRouteRateLimit } from "../../../../lib/route-rate-limit";
-import { readState, writeState } from "../../../../lib/store";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
-};
+import { isVerifiedOwnerForOrigin } from "../../../../lib/site-verification";
+import { readStateByToken, writeState } from "../../../../lib/store";
 
 type ChatPayload = {
   question?: string;
@@ -21,7 +18,7 @@ type ChatPayload = {
 export function OPTIONS() {
   return new Response(null, {
     status: 204,
-    headers: corsHeaders,
+    headers: buildCorsHeaders(null),
   });
 }
 
@@ -44,15 +41,41 @@ export async function POST(request: Request) {
   if (!question) {
     return Response.json(
       { error: "質問を入力してください。" },
-      { status: 400, headers: corsHeaders },
+      { status: 400, headers: buildCorsHeaders(null) },
     );
   }
 
-  const state = await readState();
-
-  if (!token || token !== state.tenantToken) {
+  if (!token) {
     return Response.json(
-      { error: "無効なトークンです。" },
+      { error: "無効なチャットボットです。" },
+      { status: 403, headers: buildCorsHeaders(null) },
+    );
+  }
+
+  const match = await readStateByToken(token);
+
+  if (!match) {
+    return Response.json(
+      { error: "無効なチャットボットです。" },
+      { status: 403, headers: buildCorsHeaders(null) },
+    );
+  }
+
+  const { state, userId } = match;
+  const requestOrigin = resolveRequestOrigin(request);
+  const corsHeaders = buildCorsHeaders(requestOrigin);
+  const allowedOrigin = getAllowedSiteOrigin(state);
+
+  if (!allowedOrigin || !isVerifiedOwnerForOrigin(state, allowedOrigin)) {
+    return Response.json(
+      { error: "このチャットボットはサイト所有確認が完了していません。" },
+      { status: 403, headers: corsHeaders },
+    );
+  }
+
+  if (!(await canAccessChatbot(request, state, requestOrigin))) {
+    return Response.json(
+      { error: "このチャットボットは登録されたサイト上でのみ利用できます。" },
       { status: 403, headers: corsHeaders },
     );
   }
@@ -91,7 +114,7 @@ export async function POST(request: Request) {
   }
 
   state.conversations = state.conversations.slice(0, 20);
-  await writeState(state);
+  await writeState(state, userId);
 
   return Response.json(
     {
@@ -118,5 +141,62 @@ async function parsePayload(request: Request) {
     return JSON.parse(text) as ChatPayload;
   } catch {
     return {} as ChatPayload;
+  }
+}
+
+function buildCorsHeaders(origin: string | null) {
+  return {
+    "Access-Control-Allow-Origin": origin ?? "null",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+    Vary: "Origin",
+  };
+}
+
+async function canAccessChatbot(
+  request: Request,
+  state: PrototypeState,
+  requestOrigin: string | null,
+) {
+  const user = await getOptionalUser();
+
+  if (user) {
+    return true;
+  }
+
+  const allowedOrigin = getAllowedSiteOrigin(state);
+
+  if (!allowedOrigin || !requestOrigin) {
+    return false;
+  }
+
+  return requestOrigin === allowedOrigin;
+}
+
+function getAllowedSiteOrigin(state: PrototypeState) {
+  try {
+    return new URL(state.crawl.targetUrl).origin;
+  } catch {
+    return null;
+  }
+}
+
+function resolveRequestOrigin(request: Request) {
+  const originHeader = request.headers.get("origin");
+
+  if (originHeader) {
+    return originHeader;
+  }
+
+  const referer = request.headers.get("referer");
+
+  if (!referer) {
+    return null;
+  }
+
+  try {
+    return new URL(referer).origin;
+  } catch {
+    return null;
   }
 }

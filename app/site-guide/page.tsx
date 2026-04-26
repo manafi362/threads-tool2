@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import Script from "next/script";
 
+import { getOptionalUser } from "../../lib/auth";
 import { readState } from "../../lib/store";
 
 export const metadata = {
@@ -11,7 +12,8 @@ export const metadata = {
 };
 
 export default async function SiteGuidePage() {
-  const state = await readState();
+  const user = await getOptionalUser();
+  const state = await readState(user?.id);
   const headerStore = await headers();
   const host = headerStore.get("x-forwarded-host") ?? headerStore.get("host");
   const protocol = headerStore.get("x-forwarded-proto") ?? "http";

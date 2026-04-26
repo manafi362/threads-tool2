@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
-        await safelyUpdatePrototypeState(() => ({
+        await safelyUpdatePrototypeState(session.metadata?.supabaseUserId ?? null, () => ({
           billingPatch: {
             email: session.customer_details?.email ?? null,
             customerId: typeof session.customer === "string" ? session.customer : null,
@@ -39,7 +39,11 @@ export async function POST(request: Request) {
       case "customer.subscription.deleted": {
         const subscription = event.data.object as Stripe.Subscription;
         const plan = subscription.items.data[0]?.price?.id ?? null;
-        await safelyUpdatePrototypeState(() => ({
+        const supabaseUserId =
+          typeof subscription.metadata?.supabaseUserId === "string"
+            ? subscription.metadata.supabaseUserId
+            : null;
+        await safelyUpdatePrototypeState(supabaseUserId, () => ({
           billingPatch: {
             customerId: typeof subscription.customer === "string" ? subscription.customer : null,
             subscriptionId: subscription.id,
@@ -86,6 +90,7 @@ function toIsoDate(timestamp: number | null) {
 }
 
 async function safelyUpdatePrototypeState(
+  userId: string | null,
   getPatch: () => {
     billingPatch: {
       email?: string | null;
@@ -102,7 +107,7 @@ async function safelyUpdatePrototypeState(
   try {
     const { billingPatch } = getPatch();
 
-    await updateState((current) => ({
+    await updateState(userId, (current) => ({
       ...current,
       billing: {
         ...current.billing,
