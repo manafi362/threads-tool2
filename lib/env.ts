@@ -34,6 +34,17 @@ export function getSecurityEnv() {
   };
 }
 
+export function getSafetyEnv() {
+  return {
+    safeBrowsingApiKey: readEnv("GOOGLE_SAFE_BROWSING_API_KEY"),
+    safeBrowsingApiUrl:
+      readEnv("GOOGLE_SAFE_BROWSING_API_URL") ??
+      "https://safebrowsing.googleapis.com/v4/threatMatches:find",
+    domainReputationApiUrl: readEnv("DOMAIN_REPUTATION_API_URL"),
+    domainReputationApiKey: readEnv("DOMAIN_REPUTATION_API_KEY"),
+  };
+}
+
 export function hasSupabaseEnv() {
   const { url, anonKey } = getSupabaseEnv();
   return Boolean(url && anonKey);

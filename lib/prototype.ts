@@ -74,6 +74,25 @@ export type ChatEntry = {
   timestamp: string;
 };
 
+export type AuditLogEntry = {
+  id: string;
+  timestamp: string;
+  action:
+    | "site_verification_requested"
+    | "site_verification_succeeded"
+    | "site_verification_failed"
+    | "crawl_requested"
+    | "crawl_blocked"
+    | "crawl_succeeded"
+    | "crawl_failed"
+    | "chat_blocked"
+    | "risk_check_blocked";
+  actorUserId: string | null;
+  targetUrl: string | null;
+  outcome: "info" | "blocked" | "success" | "failed";
+  detail: string;
+};
+
 export type ConversationLog = {
   id: string;
   startedAt: string;
@@ -92,6 +111,7 @@ export type PrototypeState = {
   widget: WidgetSettings;
   crawledPages: CrawledPage[];
   conversations: ConversationLog[];
+  auditLogs: AuditLogEntry[];
 };
 
 export function createDefaultState(): PrototypeState {
@@ -137,6 +157,7 @@ export function createDefaultState(): PrototypeState {
     },
     crawledPages: [],
     conversations: [],
+    auditLogs: [],
   };
 }
 

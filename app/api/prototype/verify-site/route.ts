@@ -1,6 +1,8 @@
 import { z } from "zod";
 
+import { appendAuditLog } from "../../../../lib/audit";
 import { requireApiUser } from "../../../../lib/auth";
+import { assertSafeCrawlTarget } from "../../../../lib/content-safety";
 import type { PrototypeState } from "../../../../lib/prototype";
 import {
   buildSiteVerification,
@@ -9,6 +11,7 @@ import {
 } from "../../../../lib/site-verification";
 import { checkRouteRateLimit } from "../../../../lib/route-rate-limit";
 import { assertSameOrigin } from "../../../../lib/security";
+import { assessUrlRisk } from "../../../../lib/url-risk";
 import { writeState, readState } from "../../../../lib/store";
 
 const schema = z.object({
@@ -30,11 +33,34 @@ export async function POST(request: Request) {
     assertSameOrigin(request);
     const user = await requireApiUser();
     const payload = schema.parse(await request.json());
-    const state = await readState(user.id);
+    const targetUrl = new URL(payload.url);
+    assertSafeCrawlTarget(targetUrl);
+    let state = await readState(user.id);
+    state = appendAuditLog(state, {
+      action: "site_verification_requested",
+      actorUserId: user.id,
+      targetUrl: targetUrl.toString(),
+      outcome: "info",
+      detail: "Site ownership verification was requested.",
+    });
+
+    const risk = await assessUrlRisk(targetUrl);
+
+    if (!risk.allowed) {
+      state = appendAuditLog(state, {
+        action: "risk_check_blocked",
+        actorUserId: user.id,
+        targetUrl: targetUrl.toString(),
+        outcome: "blocked",
+        detail: risk.blockedReason ?? "External URL risk checks blocked this site.",
+      });
+      await writeState(state, user.id);
+      throw new Error(risk.blockedReason ?? "このURLは安全性チェックにより拒否されました。");
+    }
 
     const nextVerification = buildSiteVerification(state, payload.url);
     const result = await verifySiteOwnership(nextVerification);
-    const nextState: PrototypeState = {
+    let nextState: PrototypeState = {
       ...state,
       siteVerification: {
         ...nextVerification,
@@ -45,6 +71,16 @@ export async function POST(request: Request) {
         lastError: result.error,
       },
     };
+
+    nextState = appendAuditLog(nextState, {
+      action: result.verified ? "site_verification_succeeded" : "site_verification_failed",
+      actorUserId: user.id,
+      targetUrl: targetUrl.toString(),
+      outcome: result.verified ? "success" : "failed",
+      detail:
+        result.error ??
+        `Ownership verification completed by ${result.method === "file" ? "file" : "meta tag"}.`,
+    });
 
     await writeState(nextState, user.id);
 

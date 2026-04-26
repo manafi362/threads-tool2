@@ -251,6 +251,7 @@ function mergeWithDefaultState(parsed: PrototypeState) {
       ...createDefaultState().widget,
       ...parsed.widget,
     },
+    auditLogs: parsed.auditLogs ?? createDefaultState().auditLogs,
   };
 }
 
