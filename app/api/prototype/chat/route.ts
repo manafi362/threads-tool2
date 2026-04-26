@@ -83,7 +83,7 @@ export async function POST(request: Request) {
     );
   }
 
-  if (!(await canAccessChatbot(request, state, requestOrigin))) {
+  if (!(await canAccessChatbot(request, state, requestOrigin, userId))) {
     return Response.json(
       { error: "このチャットボットは登録されたサイト上でのみ利用できます。" },
       { status: 403, headers: corsHeaders },
@@ -172,11 +172,12 @@ async function canAccessChatbot(
   request: Request,
   state: PrototypeState,
   requestOrigin: string | null,
+  ownerUserId: string | null,
 ) {
   const user = await getOptionalUser();
 
   if (user) {
-    return true;
+    return Boolean(ownerUserId && user.id === ownerUserId);
   }
 
   const allowedOrigin = getAllowedSiteOrigin(state);

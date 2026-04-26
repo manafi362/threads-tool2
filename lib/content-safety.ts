@@ -49,6 +49,25 @@ const BLOCKED_CRAWL_EXTENSIONS = [
 ];
 
 const ALLOWED_CONTENT_TYPES = ["text/html", "application/xhtml+xml", "text/plain"];
+const SENSITIVE_PATH_SEGMENTS = [
+  "admin",
+  "wp-admin",
+  "login",
+  "logout",
+  "signout",
+  "sign-out",
+  "delete",
+  "remove",
+  "reset",
+  "checkout",
+  "cart",
+  "billing",
+  "payment",
+  "account",
+  "profile",
+  "settings",
+  "manage",
+];
 
 export function getBlockedChatReason(question: string) {
   const value = question.trim();
@@ -85,6 +104,14 @@ export function assertSafeCrawlTarget(targetUrl: URL) {
     )
   ) {
     throw new Error("実行ファイルや圧縮ファイルの URL はクロールできません。");
+  }
+
+  if (targetUrl.search) {
+    throw new Error("クエリ文字列を含む URL はクロールできません。");
+  }
+
+  if (hasSensitivePathSegment(targetUrl.pathname)) {
+    throw new Error("管理画面や操作系の URL はクロールできません。");
   }
 }
 
@@ -144,4 +171,18 @@ function isPrivateHostname(hostname: string) {
   }
 
   return false;
+}
+
+function hasSensitivePathSegment(pathname: string) {
+  const segments = pathname
+    .toLowerCase()
+    .split("/")
+    .map((segment) => segment.trim())
+    .filter(Boolean);
+
+  return segments.some((segment) =>
+    SENSITIVE_PATH_SEGMENTS.some(
+      (keyword) => segment === keyword || segment.startsWith(`${keyword}-`) || segment.endsWith(`-${keyword}`),
+    ),
+  );
 }
