@@ -24,6 +24,10 @@ async function ensureStore(userId?: string | null) {
     if (supabaseState) {
       return supabaseState;
     }
+
+    if (!canUseFilesystemFallback()) {
+      return ensureTenantToken(createDefaultState(), userId);
+    }
   }
 
   try {
@@ -55,6 +59,10 @@ export async function writeState(state: PrototypeState, userId?: string | null) 
     if (saved) {
       return next;
     }
+
+    if (!canUseFilesystemFallback()) {
+      return next;
+    }
   }
 
   await tryWriteState(state, userId);
@@ -78,11 +86,19 @@ export async function readStateByToken(token: string) {
     return supabaseRecord;
   }
 
+  if (!canUseFilesystemFallback()) {
+    return null;
+  }
+
   const records = await listAllStates();
   return records.find((record) => record.state.tenantToken === token) ?? null;
 }
 
 async function listAllStates() {
+  if (!canUseFilesystemFallback()) {
+    return [];
+  }
+
   const records: StoreRecord[] = [];
 
   try {
@@ -281,6 +297,10 @@ function toSafeSegment(value: string) {
   return value.replace(/[^a-zA-Z0-9_-]/g, "_");
 }
 
+function canUseFilesystemFallback() {
+  return !process.env.VERCEL && process.env.NODE_ENV !== "production";
+}
+
 function ensureTenantToken(state: PrototypeState, userId?: string | null) {
   if (!userId || state.tenantToken !== DEFAULT_TOKEN) {
     return state;
@@ -296,6 +316,9 @@ function isReadonlyFilesystemError(error: unknown) {
   return (
     error instanceof Error &&
     "code" in error &&
-    (error.code === "EROFS" || error.code === "EPERM" || error.code === "EACCES")
+    (error.code === "EROFS" ||
+      error.code === "EPERM" ||
+      error.code === "EACCES" ||
+      error.code === "ENOENT")
   );
 }
