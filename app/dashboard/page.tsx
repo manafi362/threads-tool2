@@ -6,7 +6,7 @@ import { readState } from "../../lib/store";
 
 export const metadata = {
   title: "Dashboard | URLベース チャットボット",
-  description: "URLクロール、チャット設定、埋め込みコード発行を行う管理画面です。",
+  description: "URLクロール、所有確認、チャット設定、埋め込みコード発行を行う管理画面です。",
 };
 
 export default async function DashboardPage() {

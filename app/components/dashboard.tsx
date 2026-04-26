@@ -67,9 +67,7 @@ export default function Dashboard({ initialState }: DashboardProps) {
     try {
       const response = await fetch("/api/prototype/crawl", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           url: urlInput,
           mode: crawlMode,
@@ -110,7 +108,7 @@ export default function Dashboard({ initialState }: DashboardProps) {
       setCrawlMode(next.crawl.mode);
       resetPreview(next.widget.welcomeMessage);
     } catch {
-      setError("初期状態へのリセットに失敗しました。");
+      setError("状態のリセットに失敗しました。");
     } finally {
       setBusy(null);
     }
@@ -123,18 +121,13 @@ export default function Dashboard({ initialState }: DashboardProps) {
     try {
       const response = await fetch("/api/prototype/verify-site", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          url: urlInput,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: urlInput }),
       });
 
       const data = (await response.json()) as
         | {
             state?: PrototypeState;
-            instructions?: VerificationInstructions;
             error?: string;
           }
         | undefined;
@@ -168,9 +161,7 @@ export default function Dashboard({ initialState }: DashboardProps) {
     try {
       const response = await fetch("/api/prototype/chat", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           question: trimmed,
           sessionId,
@@ -199,7 +190,7 @@ export default function Dashboard({ initialState }: DashboardProps) {
         ...current,
         {
           role: "assistant",
-          content: data.answer || "その質問にはまだうまく答えられませんでした。",
+          content: data.answer || "回答を生成できませんでした。",
         },
       ]);
 
@@ -250,26 +241,29 @@ export default function Dashboard({ initialState }: DashboardProps) {
                 Revenue Dashboard
               </p>
               <h1 className="text-4xl font-semibold tracking-tight text-slate-950">
-                URL ベースのチャットボットを販売・運用する管理画面
+                URLベースのチャットボットを設定・運用する管理画面
               </h1>
               <p className="text-sm leading-7 text-slate-600">
-                クロール対象、チャットプレビュー、埋め込みコード、契約状態をまとめて確認できます。
+                サイト所有確認、URLクロール、チャット設定、埋め込みコード発行までをまとめて管理できます。
               </p>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-4">
-              <KpiCard label="契約" value={state.billing.status} note="課金ステータス" />
-              <KpiCard label="ページ" value={`${state.crawledPages.length}`} note="クロール済み" />
-              <KpiCard label="会話" value={`${state.conversations.length}`} note="保存ログ" />
-              <KpiCard label="プラン" value={state.billing.plan ?? "none"} note="保存済み" />
+              <KpiCard label="課金状態" value={state.billing.status} note="Stripe同期" />
+              <KpiCard label="ページ数" value={`${state.crawledPages.length}`} note="クロール済み" />
+              <KpiCard label="会話数" value={`${state.conversations.length}`} note="保存ログ" />
+              <KpiCard label="プラン" value={state.billing.plan ?? "none"} note="現在プラン" />
             </div>
           </div>
         </section>
 
         {!hasPaidAccess ? (
           <section className="rounded-[28px] border border-amber-200 bg-amber-50 px-5 py-4 text-sm leading-7 text-amber-900">
-            現在の契約ステータスは `{state.billing.status}` です。
-            本番運用でクロールとチャットを使うには、[Account](/account) から有効なプランを開始してください。
+            現在の課金ステータスは `{state.billing.status}` です。クロールと公開を使うには
+            <Link href="/account" className="ml-1 font-semibold underline">
+              Account
+            </Link>
+            から有効なプランを開始してください。
           </section>
         ) : null}
 
@@ -282,7 +276,7 @@ export default function Dashboard({ initialState }: DashboardProps) {
         <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
           <section className="space-y-6">
             <Panel
-              title="契約ステータス"
+              title="課金ステータス"
               description="売れる状態かどうかをここで確認できます。"
             >
               <div className="grid gap-4 md:grid-cols-3">
@@ -305,7 +299,7 @@ export default function Dashboard({ initialState }: DashboardProps) {
 
             <Panel
               title="URL クロール"
-              description="契約有効時に URL を読み込み、回答元の情報を更新します。"
+              description="対象URLを登録し、サイト所有確認のあとにページ内容を更新します。"
             >
               <form className="space-y-5" onSubmit={handleCrawlSubmit}>
                 <div className="grid gap-4 md:grid-cols-[1fr_180px]">
@@ -353,7 +347,7 @@ export default function Dashboard({ initialState }: DashboardProps) {
                     disabled={busy !== null}
                     className="rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed"
                   >
-                    初期状態に戻す
+                    状態をリセット
                   </button>
                 </div>
               </form>
@@ -452,10 +446,12 @@ export default function Dashboard({ initialState }: DashboardProps) {
                 </div>
               </div>
             </Panel>
+          </section>
 
+          <section className="space-y-6">
             <Panel
               title="ウィジェット設定"
-              description="表示名、色、初期メッセージ、配置を調整できます。"
+              description="表示名、色、初期メッセージ、表示位置を調整できます。"
             >
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="space-y-2">
@@ -516,7 +512,7 @@ export default function Dashboard({ initialState }: DashboardProps) {
 
               <div className="grid gap-4 lg:grid-cols-[240px_1fr]">
                 <div className="space-y-3">
-                  <span className="text-sm font-medium text-slate-700">配置プリセット</span>
+                  <span className="text-sm font-medium text-slate-700">表示位置</span>
                   {(
                     [
                       ["bottom-right", "右下"],
@@ -582,12 +578,10 @@ export default function Dashboard({ initialState }: DashboardProps) {
                 <WidgetPlacementPreview widget={widgetDraft} onChange={setWidgetDraft} />
               </div>
             </Panel>
-          </section>
 
-          <section className="space-y-6">
             <Panel
               title="埋め込みコード"
-              description="契約中のサイトへ設置する script タグです。"
+              description="確認済みサイトに設置する script タグです。"
             >
               {hasVerifiedSite ? (
                 <>
@@ -613,7 +607,7 @@ export default function Dashboard({ initialState }: DashboardProps) {
 
             <Panel
               title="チャットプレビュー"
-              description="現在の設定とクロール内容で、その場で応答を試せます。"
+              description="現在の設定とクロール内容をもとに、その場で応答を試せます。"
             >
               <div className="overflow-hidden rounded-[30px] border border-slate-200 bg-white">
                 <div
@@ -668,13 +662,13 @@ export default function Dashboard({ initialState }: DashboardProps) {
 
             <Panel
               title="会話ログ"
-              description="保存されているセッションの質問と回答です。"
+              description="保存されているセッションの質問と回答を確認できます。"
             >
               <div className="max-h-[680px] space-y-4 overflow-auto pr-1">
                 {state.conversations.length === 0 ? (
                   <EmptyState
                     title="まだ会話ログはありません"
-                    description="プレビューまたは埋め込みウィジェットから質問すると、ここにログが保存されます。"
+                    description="プレビューまたは設置したウィジェットから質問すると、ここにログが表示されます。"
                   />
                 ) : (
                   state.conversations.map((conversation) => (
@@ -781,10 +775,10 @@ function WidgetPlacementPreview({
 
   return (
     <div className="space-y-3">
-      <p className="text-sm font-medium text-slate-700">配置プレビュー</p>
+      <p className="text-sm font-medium text-slate-700">表示位置プレビュー</p>
       <div className="rounded-[34px] border border-slate-200 bg-[linear-gradient(180deg,_#f8fafc_0%,_#e2e8f0_100%)] p-4">
         <div className="mb-4 flex items-center justify-between rounded-2xl bg-white/90 px-4 py-3 text-sm text-slate-600 shadow-sm">
-          <span>サイト上の見え方</span>
+          <span>設置イメージ</span>
           <span>360 × 500</span>
         </div>
         <div
@@ -832,7 +826,7 @@ function WidgetPlacementPreview({
         </div>
       </div>
       <p className="text-xs leading-5 text-slate-500">
-        ボタンをドラッグすると custom 配置に切り替わります。
+        ボタンをドラッグすると、custom 表示位置へ切り替わります。
       </p>
     </div>
   );

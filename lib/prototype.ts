@@ -4,7 +4,8 @@ export const DEFAULT_TOKEN = "tenant_demo_01";
 export const MAX_CRAWL_DEPTH = 1;
 export const MAX_CRAWL_PAGES = 8;
 export const DEFAULT_WIDGET_OFFSET = 24;
-export const UNKNOWN_ANSWER = "その質問にはまだうまく答えられませんでした。";
+export const UNKNOWN_ANSWER =
+  "その質問には、まだ十分な情報を見つけられませんでした。別の聞き方でもう一度試してください。";
 
 export type CrawlMode = "site" | "page";
 export type WidgetPreset =
@@ -127,9 +128,9 @@ export function createDefaultState(): PrototypeState {
       lastError: null,
     },
     widget: {
-      displayName: "サポートチャット",
+      displayName: "サイトチャットボット",
       accentColor: "#0f766e",
-      welcomeMessage: "こんにちは。サイトについて知りたいことを聞いてください。",
+      welcomeMessage: "こんにちは。サイトについて知りたいことを気軽に質問してください。",
       positionPreset: "bottom-right",
       x: DEFAULT_WIDGET_OFFSET,
       y: DEFAULT_WIDGET_OFFSET,

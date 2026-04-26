@@ -26,7 +26,7 @@ export default async function AccountPage() {
           </h1>
           <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
             ここからプランを開始し、Stripe Billing Portal で契約内容や支払い方法を管理できます。
-            Webhook と同期された最新の状態もこのページで確認できます。
+            Webhook と同期された最新状態もこのページで確認できます。
           </p>
         </section>
 
