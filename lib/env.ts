@@ -13,6 +13,7 @@ export function getSupabaseEnv() {
   return {
     url: readEnv("NEXT_PUBLIC_SUPABASE_URL"),
     anonKey: readEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
+    serviceRoleKey: readEnv("SUPABASE_SERVICE_ROLE_KEY"),
   };
 }
 
@@ -36,6 +37,11 @@ export function getSecurityEnv() {
 export function hasSupabaseEnv() {
   const { url, anonKey } = getSupabaseEnv();
   return Boolean(url && anonKey);
+}
+
+export function hasSupabaseAdminEnv() {
+  const { url, serviceRoleKey } = getSupabaseEnv();
+  return Boolean(url && serviceRoleKey);
 }
 
 export function hasStripeEnv() {

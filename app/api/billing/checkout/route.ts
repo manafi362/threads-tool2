@@ -61,8 +61,17 @@ export async function POST(request: Request) {
       subscription_data: starterTrialEligible
         ? {
             trial_period_days: STARTER_TRIAL_DAYS,
+            metadata: {
+              supabaseUserId: user.id,
+              plan: payload.plan,
+            },
           }
-        : undefined,
+        : {
+            metadata: {
+              supabaseUserId: user.id,
+              plan: payload.plan,
+            },
+          },
     });
 
     await updateState(user.id, (current) => ({
@@ -72,6 +81,7 @@ export async function POST(request: Request) {
         email: user.email ?? null,
         customerId: customer.id,
         plan: payload.plan,
+        status: starterTrialEligible ? "trialing" : current.billing.status,
         lastCheckoutAt: new Date().toISOString(),
       },
     }));

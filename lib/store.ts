@@ -3,10 +3,14 @@ import "server-only";
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
+import { hasSupabaseAdminEnv, hasSupabaseEnv } from "./env";
 import { DEFAULT_TOKEN, PrototypeState, createDefaultState } from "./prototype";
+import { createSupabaseAdminClient } from "./supabase/admin";
+import { createSupabaseServerClient } from "./supabase/server";
 
 const legacyStorePath = path.join(process.cwd(), "data", "prototype-store.json");
 const userStoreDir = path.join(process.cwd(), "data", "prototype-stores");
+const SUPABASE_TABLE = "prototype_states";
 
 type StoreRecord = {
   userId: string | null;
@@ -14,6 +18,14 @@ type StoreRecord = {
 };
 
 async function ensureStore(userId?: string | null) {
+  if (userId) {
+    const supabaseState = await loadStateFromSupabase(userId);
+
+    if (supabaseState) {
+      return supabaseState;
+    }
+  }
+
   try {
     const raw = await readFile(resolveStorePath(userId), "utf8");
     const merged = mergeWithDefaultState(JSON.parse(raw) as PrototypeState);
@@ -36,6 +48,15 @@ export async function readState(userId?: string | null) {
 }
 
 export async function writeState(state: PrototypeState, userId?: string | null) {
+  if (userId) {
+    const next = ensureTenantToken(state, userId);
+    const saved = await writeStateToSupabase(next, userId);
+
+    if (saved) {
+      return next;
+    }
+  }
+
   await tryWriteState(state, userId);
   return state;
 }
@@ -51,6 +72,12 @@ export async function updateState(
 }
 
 export async function readStateByToken(token: string) {
+  const supabaseRecord = await readStateByTokenFromSupabase(token);
+
+  if (supabaseRecord) {
+    return supabaseRecord;
+  }
+
   const records = await listAllStates();
   return records.find((record) => record.state.tenantToken === token) ?? null;
 }
@@ -93,6 +120,115 @@ async function listAllStates() {
   }
 
   return records;
+}
+
+async function loadStateFromSupabase(userId: string) {
+  try {
+    const client = await getSupabaseStoreClient();
+
+    if (!client) {
+      return null;
+    }
+
+    const { data, error } = await client
+      .from(SUPABASE_TABLE)
+      .select("state")
+      .eq("user_id", userId)
+      .maybeSingle<{ state: PrototypeState }>();
+
+    if (error) {
+      throw error;
+    }
+
+    if (!data?.state) {
+      const initial = ensureTenantToken(createDefaultState(), userId);
+      await writeStateToSupabase(initial, userId);
+      return initial;
+    }
+
+    const merged = mergeWithDefaultState(data.state);
+    const next = ensureTenantToken(merged, userId);
+
+    if (next !== merged) {
+      await writeStateToSupabase(next, userId);
+    }
+
+    return next;
+  } catch {
+    return null;
+  }
+}
+
+async function writeStateToSupabase(state: PrototypeState, userId: string) {
+  try {
+    const client = await getSupabaseStoreClient();
+
+    if (!client) {
+      return false;
+    }
+
+    const { error } = await client.from(SUPABASE_TABLE).upsert(
+      {
+        user_id: userId,
+        tenant_token: state.tenantToken,
+        state,
+        updated_at: new Date().toISOString(),
+      },
+      {
+        onConflict: "user_id",
+      },
+    );
+
+    if (error) {
+      throw error;
+    }
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function readStateByTokenFromSupabase(token: string) {
+  try {
+    if (!hasSupabaseAdminEnv()) {
+      return null;
+    }
+
+    const client = createSupabaseAdminClient();
+    const { data, error } = await client
+      .from(SUPABASE_TABLE)
+      .select("user_id, state")
+      .eq("tenant_token", token)
+      .maybeSingle<{ user_id: string; state: PrototypeState }>();
+
+    if (error || !data?.state) {
+      return null;
+    }
+
+    return {
+      userId: data.user_id,
+      state: mergeWithDefaultState(data.state),
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function getSupabaseStoreClient() {
+  if (hasSupabaseAdminEnv()) {
+    return createSupabaseAdminClient();
+  }
+
+  if (!hasSupabaseEnv()) {
+    return null;
+  }
+
+  try {
+    return await createSupabaseServerClient();
+  } catch {
+    return null;
+  }
 }
 
 function mergeWithDefaultState(parsed: PrototypeState) {
