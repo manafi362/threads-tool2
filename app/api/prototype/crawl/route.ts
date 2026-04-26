@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { requireApiUser } from "../../../../lib/auth";
 import { syncBillingStateForUser } from "../../../../lib/billing";
+import { assertSafeCrawlTarget } from "../../../../lib/content-safety";
 import { checkRouteRateLimit } from "../../../../lib/route-rate-limit";
 import { crawlSite } from "../../../../lib/crawler";
 import { assertPaidAccess } from "../../../../lib/entitlements";
@@ -47,6 +48,7 @@ export async function POST(request: Request) {
     const user = await requireApiUser();
     const payload = schema.parse(await request.json());
     const targetUrl = new URL(payload.url);
+    assertSafeCrawlTarget(targetUrl);
     const storedState = await readState(user.id);
     const state = await syncBillingStateForUser(user.id, user.email, storedState);
     assertPaidAccess(state);

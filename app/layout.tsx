@@ -44,9 +44,6 @@ export default async function RootLayout({
                 <Link href="/account" className="transition hover:text-slate-950">
                   Account
                 </Link>
-                <Link href="/setup" className="transition hover:text-slate-950">
-                  Setup
-                </Link>
                 <Link href="/privacy" className="transition hover:text-slate-950">
                   Privacy
                 </Link>

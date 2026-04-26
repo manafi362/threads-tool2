@@ -15,11 +15,11 @@ export default async function HomePage() {
     <main className="landing-shell">
       <section className="hero-grid">
         <div className="hero-copy">
-          <span className="hero-badge">URLベース チャットボット SaaS</span>
+          <span className="hero-badge">URL-Based Chatbot SaaS</span>
           <h1>URLを登録するだけで、あなたのサイト専用チャットボットを公開できます。</h1>
           <p className="hero-lead">
-            サイトURLを登録すると、その内容に沿って回答する専用チャットボットを作成できます。
-            Googleログインから開始でき、導入後の運用や課金管理までひとつにまとまっています。
+            サイトURLを登録すると、その内容に沿って回答するチャットボットを作成できます。
+            ログイン、課金、サイト所有確認、ウィジェット公開までをひとつの流れで進められます。
           </p>
 
           <div className="hero-actions">
@@ -29,7 +29,7 @@ export default async function HomePage() {
                   ダッシュボードを見る
                 </Link>
                 <Link className="secondary-button" href="/account">
-                  料金プランを見る
+                  アカウントを見る
                 </Link>
               </>
             ) : authReady ? (
@@ -41,8 +41,8 @@ export default async function HomePage() {
               </>
             ) : (
               <>
-                <Link className="primary-button" href="/setup">
-                  セットアップを見る
+                <Link className="primary-button" href="/login">
+                  ログインを開始
                 </Link>
                 <Link className="secondary-button" href="#pricing">
                   料金プランを見る
@@ -54,7 +54,7 @@ export default async function HomePage() {
           <div className="metric-grid">
             <Metric title="認証" value="Googleログイン" />
             <Metric title="課金" value="Stripe決済" />
-            <Metric title="導入" value="ウィジェット埋め込み" />
+            <Metric title="公開" value="ウィジェット埋め込み" />
           </div>
         </div>
 
@@ -64,23 +64,23 @@ export default async function HomePage() {
             <ol>
               <li>Googleでログイン</li>
               <li>サイトURLを登録</li>
-              <li>回答内容を確認</li>
-              <li>ウィジェットを埋め込んで公開</li>
+              <li>所有確認とクロール</li>
+              <li>ウィジェットをサイトへ設置</li>
             </ol>
           </div>
 
           <div className="status-card">
             <h2>このサービスでできること</h2>
             <ReadinessRow
-              title="サイト専用の回答"
-              detail="登録したURLの内容に合わせて質問へ答えるチャットボットを作成できます。"
+              title="サイト内容に沿った回答"
+              detail="登録したURLの内容をもとに、サイト訪問者の質問へ答える専用チャットを公開できます。"
             />
             <ReadinessRow
-              title="すぐ始められる料金プラン"
-              detail="Starterは14日間無料トライアル付きで、公開前の確認から始めやすい設計です。"
+              title="始めやすい料金プラン"
+              detail="Starter は 14 日間の無料トライアル付きで、公開前の確認から始めやすい設計です。"
             />
             <ReadinessRow
-              title="継続運用のしやすさ"
+              title="継続運用しやすい管理"
               detail="アカウント画面から契約状況を確認でき、Billing Portal で課金管理も行えます。"
             />
           </div>
@@ -89,7 +89,7 @@ export default async function HomePage() {
 
       <section className="value-grid">
         <ValueCard
-          title="サイト内容に沿った回答"
+          title="サイト専用の回答"
           body="FAQだけでなく、登録したサイトの情報をもとにした案内チャットとして活用できます。"
         />
         <ValueCard
@@ -98,20 +98,20 @@ export default async function HomePage() {
         />
         <ValueCard
           title="運用と見直しがしやすい"
-          body="課金管理や導入後の確認もまとめて行えるので、継続運用にも向いています。"
+          body="課金状況やクロール状態、保存された会話ログを見ながら改善を進められます。"
         />
       </section>
 
       <section className="pricing-section" id="pricing">
         <div className="section-copy">
-          <span className="section-label">料金プラン</span>
-          <h2>用途に合わせて選べるシンプルな料金設計</h2>
+          <span className="section-label">Pricing</span>
+          <h2>導入規模に合わせて選べるシンプルな料金プラン</h2>
           <p>
-            まずは無料トライアル付きの Starter から始めて、必要に応じて Growth へ移行できます。
+            まずは無料トライアル付きの Starter から始めて、必要に応じて Growth に移行できます。
           </p>
           {!authReady ? (
             <p className="inline-note">
-              ログイン開始には Supabase の認証設定が必要です。未設定なら Setup から確認できます。
+              ログイン開始には Supabase の認証設定が必要です。環境変数を設定してから確認してください。
             </p>
           ) : null}
         </div>
@@ -142,7 +142,7 @@ export default async function HomePage() {
                 </Link>
               ) : (
                 <Link className="secondary-button" href="/login">
-                  ログインして料金プランを見る
+                  ログインしてプランを見る
                 </Link>
               )}
             </article>

@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 import { getOptionalUser } from "../../../../lib/auth";
+import { getBlockedChatReason } from "../../../../lib/content-safety";
 import { assertPaidAccess } from "../../../../lib/entitlements";
 import type { PrototypeState } from "../../../../lib/prototype";
 import { UNKNOWN_ANSWER } from "../../../../lib/prototype";
@@ -45,6 +46,15 @@ export async function POST(request: Request) {
     );
   }
 
+  const blockedReason = getBlockedChatReason(question);
+
+  if (blockedReason) {
+    return Response.json(
+      { error: blockedReason },
+      { status: 400, headers: buildCorsHeaders(null) },
+    );
+  }
+
   if (!token) {
     return Response.json(
       { error: "無効なチャットボットです。" },
@@ -84,7 +94,12 @@ export async function POST(request: Request) {
     assertPaidAccess(state);
   } catch (error) {
     return Response.json(
-      { error: error instanceof Error ? error.message : "有効なサブスクリプションが必要です。" },
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "有効なサブスクリプションが必要です。",
+      },
       { status: 402, headers: corsHeaders },
     );
   }

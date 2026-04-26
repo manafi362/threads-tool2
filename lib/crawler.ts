@@ -6,6 +6,7 @@ import {
   MAX_CRAWL_PAGES,
   type CrawlMode,
 } from "./prototype";
+import { assertSafeCrawlResponse, assertSafeCrawlTarget } from "./content-safety";
 
 type CrawlResult = {
   pages: CrawledPage[];
@@ -19,6 +20,7 @@ type QueueItem = {
 
 export async function crawlSite(targetUrl: string, mode: CrawlMode) {
   const normalized = new URL(targetUrl);
+  assertSafeCrawlTarget(normalized);
   const disallowed = await readRobots(normalized);
   const warnings: string[] = [];
   const queue: QueueItem[] = [{ url: normalized.toString(), depth: 0 }];
@@ -45,12 +47,15 @@ export async function crawlSite(targetUrl: string, mode: CrawlMode) {
           "User-Agent": "threads-tool-prototype/0.1",
         },
         redirect: "follow",
+        signal: AbortSignal.timeout(8000),
       });
 
       if (!response.ok) {
         warnings.push(`取得失敗 (${response.status}): ${current.url}`);
         continue;
       }
+
+      assertSafeCrawlResponse(response, current.url);
 
       const html = await response.text();
       const text = extractText(html);
@@ -77,6 +82,12 @@ export async function crawlSite(targetUrl: string, mode: CrawlMode) {
       const nextUrls = extractLinks(html, current.url, normalized.origin);
 
       for (const nextUrl of nextUrls) {
+        try {
+          assertSafeCrawlTarget(new URL(nextUrl));
+        } catch {
+          continue;
+        }
+
         if (!seen.has(nextUrl)) {
           queue.push({
             url: nextUrl,
