@@ -3,6 +3,7 @@ import Link from "next/link";
 import Script from "next/script";
 
 import { getOptionalUser } from "../../lib/auth";
+import { createDefaultState } from "../../lib/prototype";
 import { readState } from "../../lib/store";
 
 export const metadata = {
@@ -11,8 +12,9 @@ export const metadata = {
 };
 
 export default async function SiteGuidePage() {
-  const user = await getOptionalUser();
-  const state = await readState(user?.id);
+  const fallbackState = createDefaultState();
+  const user = await getOptionalUser().catch(() => null);
+  const state = await readState(user?.id).catch(() => fallbackState);
   const headerStore = await headers();
   const host = headerStore.get("x-forwarded-host") ?? headerStore.get("host");
   const protocol = headerStore.get("x-forwarded-proto") ?? "http";
