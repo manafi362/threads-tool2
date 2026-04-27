@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { signOutAction } from "./actions/auth";
 import { getOptionalUser } from "../lib/auth";
+import { getSiteVerificationEnv } from "../lib/env";
 
 import "./globals.css";
 
@@ -21,9 +22,15 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const user = await getOptionalUser();
+  const { publicVerificationToken } = getSiteVerificationEnv();
 
   return (
     <html lang="ja" className="h-full antialiased">
+      <head>
+        {publicVerificationToken ? (
+          <meta name="threads-tool-verification" content={publicVerificationToken} />
+        ) : null}
+      </head>
       <body className="min-h-full bg-white text-slate-950">
         <div className="flex min-h-screen flex-col">
           <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/90 backdrop-blur">

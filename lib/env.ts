@@ -43,6 +43,12 @@ export function getSafetyEnv() {
   };
 }
 
+export function getSiteVerificationEnv() {
+  return {
+    publicVerificationToken: readEnv("PUBLIC_SITE_VERIFICATION_TOKEN"),
+  };
+}
+
 export function hasSupabaseEnv() {
   const { url, anonKey } = getSupabaseEnv();
   return Boolean(url && anonKey);
