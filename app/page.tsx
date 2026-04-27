@@ -3,23 +3,61 @@ import Link from "next/link";
 import { getOptionalUser } from "@/lib/auth";
 import { PLAN_CATALOG } from "@/lib/billing";
 import { hasStripeEnv, hasSupabaseEnv } from "@/lib/env";
+import { buildPageMetadata, getSiteUrl, SITE_DESCRIPTION, SITE_NAME, SITE_TITLE } from "@/lib/site-config";
 import BillingButton from "./components/billing-button";
 import GoogleSignIn from "./components/google-sign-in";
+
+export const metadata = buildPageMetadata({
+  title: `${SITE_NAME} | ${SITE_TITLE}`,
+  description: SITE_DESCRIPTION,
+  path: "/",
+});
 
 export default async function HomePage() {
   const user = await getOptionalUser();
   const stripeReady = hasStripeEnv();
   const authReady = hasSupabaseEnv();
+  const siteUrl = getSiteUrl();
+
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: SITE_NAME,
+    applicationCategory: "BusinessApplication",
+    operatingSystem: "Web",
+    inLanguage: "ja",
+    url: siteUrl,
+    description: SITE_DESCRIPTION,
+    offers: [
+      {
+        "@type": "Offer",
+        name: PLAN_CATALOG.starter.name,
+        price: "4980",
+        priceCurrency: "JPY",
+      },
+      {
+        "@type": "Offer",
+        name: PLAN_CATALOG.growth.name,
+        price: "12800",
+        priceCurrency: "JPY",
+      },
+    ],
+  };
 
   return (
     <main className="landing-shell">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+
       <section className="hero-grid">
         <div className="hero-copy">
           <span className="hero-badge">URL-Based Chatbot SaaS</span>
-          <h1>URLを登録するだけで、あなたのサイト専用チャットボットを公開できます。</h1>
+          <h1>URLを登録するだけで、サイト専用チャットボットを公開できます。</h1>
           <p className="hero-lead">
-            サイトURLを登録すると、その内容に沿って回答するチャットボットを作成できます。
-            ログイン、課金、サイト所有確認、ウィジェット公開までをひとつの流れで進められます。
+            サイト制作者だけが所有確認を通したうえでチャットボットを設置し、訪問者はその内容に沿って質問できます。
+            URL登録、所有確認、クロール、埋め込みコード発行、課金管理までをひとつの管理画面で進められます。
           </p>
 
           <div className="hero-actions">
@@ -42,7 +80,7 @@ export default async function HomePage() {
             ) : (
               <>
                 <Link className="primary-button" href="/login">
-                  ログインを開始
+                  ログインして始める
                 </Link>
                 <Link className="secondary-button" href="#pricing">
                   料金プランを見る
@@ -53,8 +91,8 @@ export default async function HomePage() {
 
           <div className="metric-grid">
             <Metric title="認証" value="Googleログイン" />
-            <Metric title="課金" value="Stripe決済" />
-            <Metric title="公開" value="ウィジェット埋め込み" />
+            <Metric title="課金" value="Stripe連携" />
+            <Metric title="公開" value="埋め込みコード発行" />
           </div>
         </div>
 
@@ -65,7 +103,7 @@ export default async function HomePage() {
               <li>Googleでログイン</li>
               <li>サイトURLを登録</li>
               <li>所有確認とクロール</li>
-              <li>ウィジェットをサイトへ設置</li>
+              <li>埋め込みコードを設置</li>
             </ol>
           </div>
 
@@ -73,15 +111,15 @@ export default async function HomePage() {
             <h2>このサービスでできること</h2>
             <ReadinessRow
               title="サイト内容に沿った回答"
-              detail="登録したURLの内容をもとに、サイト訪問者の質問へ答える専用チャットを公開できます。"
+              detail="登録したURLの内容をもとに、FAQだけでなくサイト専用の案内チャットとして活用できます。"
             />
             <ReadinessRow
-              title="始めやすい料金プラン"
-              detail="Starter は 14 日間の無料トライアル付きで、公開前の確認から始めやすい設計です。"
+              title="所有確認つきの公開"
+              detail="対象サイトの所有確認が終わったユーザーだけが、公開用の埋め込みコードを取得できます。"
             />
             <ReadinessRow
-              title="継続運用しやすい管理"
-              detail="アカウント画面から契約状況を確認でき、Billing Portal で課金管理も行えます。"
+              title="課金と運用を一元管理"
+              detail="アカウント画面から無料トライアル、契約状況の確認、Billing Portal での管理まで行えます。"
             />
           </div>
         </div>
@@ -89,31 +127,26 @@ export default async function HomePage() {
 
       <section className="value-grid">
         <ValueCard
-          title="サイト専用の回答"
-          body="FAQだけでなく、登録したサイトの情報をもとにした案内チャットとして活用できます。"
+          title="サイト制作者だけが公開可能"
+          body="所有確認トークンを対象サイトへ設置できた場合だけ、公開チャットボットの利用とクロールを許可します。"
         />
         <ValueCard
-          title="導入と公開がシンプル"
-          body="URL登録からチャットの確認、サイト埋め込みまでをひとつの流れで進められます。"
+          title="安全確認つきのクロール"
+          body="危険URL判定、内部ネットワーク遮断、危険な拡張子や管理系パスの拒否など、公開前提の安全対策を組み込んでいます。"
         />
         <ValueCard
-          title="運用と見直しがしやすい"
-          body="課金状況やクロール状態、保存された会話ログを見ながら改善を進められます。"
+          title="運用しやすい管理画面"
+          body="クロール状況、所有確認、チャットプレビュー、埋め込みコード、課金状態をひとつの画面で確認できます。"
         />
       </section>
 
       <section className="pricing-section" id="pricing">
         <div className="section-copy">
           <span className="section-label">Pricing</span>
-          <h2>導入規模に合わせて選べるシンプルな料金プラン</h2>
+          <h2>公開前の検証から運用開始まで進めやすい料金プラン</h2>
           <p>
-            まずは無料トライアル付きの Starter から始めて、必要に応じて Growth に移行できます。
+            まずは無料トライアル付きの Starter から始めて、複数サイト運用や継続改善が必要になったら Growth に移行できます。
           </p>
-          {!authReady ? (
-            <p className="inline-note">
-              ログイン開始には Supabase の認証設定が必要です。環境変数を設定してから確認してください。
-            </p>
-          ) : null}
         </div>
 
         <div className="plan-grid">

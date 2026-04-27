@@ -1,7 +1,10 @@
-export const metadata = {
-  title: "Contact | URLベース チャットボット",
-  description: "URLベース チャットボット への問い合わせ先です。",
-};
+import { buildPageMetadata } from "../../lib/site-config";
+
+export const metadata = buildPageMetadata({
+  title: "お問い合わせ",
+  description: "URLベースチャットボットへのお問い合わせ先と導入相談の窓口です。",
+  path: "/contact",
+});
 
 export default function ContactPage() {
   return (
@@ -10,12 +13,12 @@ export default function ContactPage() {
 
       <div className="space-y-6 leading-8 text-slate-700">
         <p>
-          導入相談、デモ依頼、運用設計、料金プランの相談はここから受けられる想定です。
-          本番公開するときは、実在の窓口に差し替えてください。
+          導入相談、デモ依頼、活用設計、料金プランの相談はこちらから受け付けています。
+          本番公開に関するご質問や運用中の見直しもお気軽にお問い合わせください。
         </p>
 
         <section className="rounded-3xl border border-slate-200 bg-slate-50 p-6">
-          <h2 className="mb-3 text-xl font-semibold text-slate-900">連絡先の例</h2>
+          <h2 className="mb-3 text-xl font-semibold text-slate-900">連絡先</h2>
           <p>Email: product@example.com</p>
           <p>Slack: #threads-tool</p>
         </section>
@@ -23,8 +26,8 @@ export default function ContactPage() {
         <section>
           <h2 className="mb-2 text-xl font-semibold text-slate-900">相談できる内容</h2>
           <p>
-            クロール対象の設計、チャットボット精度、埋め込み方法、料金設計、
-            社内導入向けの権限や運用フローなど、販売前後で必要な内容を想定しています。
+            クロール対象の設計、チャットボット回答品質、埋め込み位置の改善、運用ルールの整備など、
+            公開後の改善に関する相談も受け付けています。
           </p>
         </section>
       </div>

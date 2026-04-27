@@ -1,7 +1,10 @@
-export const metadata = {
-  title: "Privacy | URLベース チャットボット",
-  description: "URLベース チャットボット のプライバシーポリシーです。",
-};
+import { buildPageMetadata } from "../../lib/site-config";
+
+export const metadata = buildPageMetadata({
+  title: "プライバシーポリシー",
+  description: "URLベースチャットボットのプライバシーポリシーです。",
+  path: "/privacy",
+});
 
 export default function PrivacyPage() {
   return (
@@ -10,18 +13,18 @@ export default function PrivacyPage() {
 
       <div className="space-y-8 leading-8 text-slate-700">
         <section>
-          <h2 className="mb-2 text-xl font-semibold text-slate-900">1. 取得する情報</h2>
+          <h2 className="mb-2 text-xl font-semibold text-slate-900">1. 収集する情報</h2>
           <p>
-            このアプリでは、クロール対象の URL、取得したページ本文、チャットの質問内容、
-            回答ログ、ログイン情報、課金処理に必要な識別子を扱います。
+            このアプリでは、クロール対象のURL、取得したページ本文、チャットの質問内容、
+            ログイン情報、課金管理に必要な最小限の情報を取り扱います。
           </p>
         </section>
 
         <section>
           <h2 className="mb-2 text-xl font-semibold text-slate-900">2. 利用目的</h2>
           <p>
-            取得した情報は、サイト内容に基づく回答生成、ウィジェット提供、
-            会話履歴の確認、認証、課金、運用改善のために利用します。
+            取得した情報は、サイト内容に沿った回答生成、ウィジェット表示、利用状況の確認、
+            課金管理、品質改善のために利用します。
           </p>
         </section>
 
@@ -34,10 +37,9 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="mb-2 text-xl font-semibold text-slate-900">4. 運用時の注意</h2>
+          <h2 className="mb-2 text-xl font-semibold text-slate-900">4. 保存期間と管理</h2>
           <p>
-            このページはプロトタイプ向けの雛形です。本番公開前には、実際の保存期間、
-            利用目的、問い合わせ窓口、第三者提供の有無に合わせて更新してください。
+            データは運用上必要な期間保存し、不要になった情報は管理画面や運用フローに沿って削除・更新します。
           </p>
         </section>
       </div>

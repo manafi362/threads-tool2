@@ -5,12 +5,34 @@ import Link from "next/link";
 import { signOutAction } from "./actions/auth";
 import { getOptionalUser } from "../lib/auth";
 import { getSiteVerificationEnv } from "../lib/env";
+import { getSiteUrl, SITE_DESCRIPTION, SITE_NAME, SITE_TITLE } from "../lib/site-config";
 
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "URLベース チャットボット",
-  description: "URLを読み込んで内容に答えるチャットボットを販売・運用するためのアプリです。",
+  metadataBase: new URL(getSiteUrl()),
+  title: {
+    default: `${SITE_NAME} | ${SITE_TITLE}`,
+    template: `%s | ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: `${SITE_NAME} | ${SITE_TITLE}`,
+    description: SITE_DESCRIPTION,
+    url: getSiteUrl(),
+    siteName: SITE_NAME,
+    locale: "ja_JP",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${SITE_NAME} | ${SITE_TITLE}`,
+    description: SITE_DESCRIPTION,
+  },
   verification: {
     google: "u5tcqf-H8kXnbZB6VVZvY8Fb0UnaAid2v6K1S0Ho2Dw",
   },
@@ -36,7 +58,7 @@ export default async function RootLayout({
           <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/90 backdrop-blur">
             <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 lg:px-8">
               <Link href="/" className="text-lg font-semibold tracking-tight text-slate-950">
-                URLベース チャットボット
+                {SITE_NAME}
               </Link>
               <nav className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
                 <Link href="/" className="transition hover:text-slate-950">
@@ -85,7 +107,7 @@ export default async function RootLayout({
 
           <footer className="border-t border-slate-200 bg-white px-6 py-6 text-sm text-slate-600">
             <div className="mx-auto flex max-w-7xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p>© 2026 URLベース チャットボット</p>
+              <p>© 2026 {SITE_NAME}</p>
               <p>URLクロール、チャット回答、Stripe課金までをまとめた販売向けアプリ</p>
             </div>
           </footer>
