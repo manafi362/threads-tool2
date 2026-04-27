@@ -67,10 +67,11 @@ async function checkGoogleWebRisk(targetUrl: URL): Promise<UrlRiskCheck> {
     });
 
     if (!response.ok) {
+      const detail = await response.text().catch(() => "");
       return {
         source: "google-web-risk",
         status: "error",
-        detail: `Google Web Risk request failed with status ${response.status}.`,
+        detail: `Google Web Risk request failed with status ${response.status}.${detail ? ` Response: ${detail}` : ""}`,
       };
     }
 
