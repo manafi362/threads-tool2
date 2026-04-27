@@ -23,13 +23,23 @@ export async function assessUrlRisk(targetUrl: URL): Promise<UrlRiskAssessment> 
   const reputationCheck = await checkDomainReputation(targetUrl);
   checks.push(reputationCheck);
 
+  const failClosedCheck = checks.find((check) => shouldFailClosed(check));
   const blockedCheck = checks.find((check) => check.status === "blocked");
+  const blockingCheck = blockedCheck ?? failClosedCheck ?? null;
 
   return {
-    allowed: !blockedCheck,
+    allowed: !blockingCheck,
     checks,
-    blockedReason: blockedCheck?.detail ?? null,
+    blockedReason: blockingCheck?.detail ?? null,
   };
+}
+
+function shouldFailClosed(check: UrlRiskCheck) {
+  if (check.status !== "error") {
+    return false;
+  }
+
+  return check.source === "google-web-risk";
 }
 
 async function checkGoogleWebRisk(targetUrl: URL): Promise<UrlRiskCheck> {
