@@ -3,7 +3,7 @@ import "server-only";
 import { getSafetyEnv } from "./env";
 
 type UrlRiskCheck = {
-  source: "google-safe-browsing" | "domain-reputation";
+  source: "google-web-risk" | "domain-reputation";
   status: "allowed" | "blocked" | "skipped" | "error";
   detail: string;
 };
@@ -17,8 +17,8 @@ export type UrlRiskAssessment = {
 export async function assessUrlRisk(targetUrl: URL): Promise<UrlRiskAssessment> {
   const checks: UrlRiskCheck[] = [];
 
-  const safeBrowsingCheck = await checkGoogleSafeBrowsing(targetUrl);
-  checks.push(safeBrowsingCheck);
+  const webRiskCheck = await checkGoogleWebRisk(targetUrl);
+  checks.push(webRiskCheck);
 
   const reputationCheck = await checkDomainReputation(targetUrl);
   checks.push(reputationCheck);
@@ -32,76 +32,67 @@ export async function assessUrlRisk(targetUrl: URL): Promise<UrlRiskAssessment> 
   };
 }
 
-async function checkGoogleSafeBrowsing(targetUrl: URL): Promise<UrlRiskCheck> {
-  const { safeBrowsingApiKey, safeBrowsingApiUrl } = getSafetyEnv();
+async function checkGoogleWebRisk(targetUrl: URL): Promise<UrlRiskCheck> {
+  const { webRiskApiKey, webRiskApiUrl } = getSafetyEnv();
 
-  if (!safeBrowsingApiKey) {
+  if (!webRiskApiKey) {
     return {
-      source: "google-safe-browsing",
+      source: "google-web-risk",
       status: "skipped",
-      detail: "Google Safe Browsing API key is not configured.",
+      detail: "Google Web Risk API key is not configured.",
     };
   }
 
   try {
-    const endpoint = new URL(safeBrowsingApiUrl);
-    endpoint.searchParams.set("key", safeBrowsingApiKey);
+    const endpoint = new URL(webRiskApiUrl);
+    endpoint.searchParams.set("key", webRiskApiKey);
+    endpoint.searchParams.set("uri", targetUrl.toString());
+    endpoint.searchParams.append("threatTypes", "MALWARE");
+    endpoint.searchParams.append("threatTypes", "SOCIAL_ENGINEERING");
+    endpoint.searchParams.append("threatTypes", "UNWANTED_SOFTWARE");
 
     const response = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        client: {
-          clientId: "threads-tool",
-          clientVersion: "1.0.0",
-        },
-        threatInfo: {
-          threatTypes: ["MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE"],
-          platformTypes: ["ANY_PLATFORM"],
-          threatEntryTypes: ["URL"],
-          threatEntries: [{ url: targetUrl.toString() }],
-        },
-      }),
+      method: "GET",
       signal: AbortSignal.timeout(8000),
     });
 
     if (!response.ok) {
       return {
-        source: "google-safe-browsing",
+        source: "google-web-risk",
         status: "error",
-        detail: `Google Safe Browsing request failed with status ${response.status}.`,
+        detail: `Google Web Risk request failed with status ${response.status}.`,
       };
     }
 
     const data = (await response.json()) as {
-      matches?: Array<{ threatType?: string }>;
+      threat?: {
+        threatTypes?: string[];
+        expireTime?: string;
+      };
     };
 
-    if (data.matches && data.matches.length > 0) {
-      const threatTypes = data.matches
-        .map((match) => match.threatType)
+    if (data.threat?.threatTypes?.length) {
+      const threatTypes = data.threat.threatTypes
         .filter(Boolean)
         .join(", ");
 
       return {
-        source: "google-safe-browsing",
+        source: "google-web-risk",
         status: "blocked",
-        detail: `Google Safe Browsing detected risk for this URL (${threatTypes || "unsafe"}).`,
+        detail: `Google Web Risk detected risk for this URL (${threatTypes || "unsafe"}).`,
       };
     }
 
     return {
-      source: "google-safe-browsing",
+      source: "google-web-risk",
       status: "allowed",
-      detail: "Google Safe Browsing did not report this URL as unsafe.",
+      detail: "Google Web Risk did not report this URL as unsafe.",
     };
   } catch (error) {
     return {
-      source: "google-safe-browsing",
+      source: "google-web-risk",
       status: "error",
-      detail: error instanceof Error ? error.message : "Google Safe Browsing request failed.",
+      detail: error instanceof Error ? error.message : "Google Web Risk request failed.",
     };
   }
 }

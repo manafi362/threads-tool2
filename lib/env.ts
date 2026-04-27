@@ -36,10 +36,8 @@ export function getSecurityEnv() {
 
 export function getSafetyEnv() {
   return {
-    safeBrowsingApiKey: readEnv("GOOGLE_SAFE_BROWSING_API_KEY"),
-    safeBrowsingApiUrl:
-      readEnv("GOOGLE_SAFE_BROWSING_API_URL") ??
-      "https://safebrowsing.googleapis.com/v4/threatMatches:find",
+    webRiskApiKey: readEnv("GOOGLE_WEB_RISK_API_KEY"),
+    webRiskApiUrl: readEnv("GOOGLE_WEB_RISK_API_URL") ?? "https://webrisk.googleapis.com/v1/uris:search",
     domainReputationApiUrl: readEnv("DOMAIN_REPUTATION_API_URL"),
     domainReputationApiKey: readEnv("DOMAIN_REPUTATION_API_KEY"),
   };
