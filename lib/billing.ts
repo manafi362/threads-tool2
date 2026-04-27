@@ -44,11 +44,13 @@ export async function findOrCreateCustomer(email: string, name?: string | null) 
   const stripe = getStripeServer();
   const existing = await stripe.customers.list({
     email,
-    limit: 1,
+    limit: 10,
   });
 
-  if (existing.data[0]) {
-    return existing.data[0];
+  const reusableCustomer = existing.data.find((customer) => !customer.deleted) ?? null;
+
+  if (reusableCustomer) {
+    return reusableCustomer;
   }
 
   return stripe.customers.create({
@@ -57,13 +59,53 @@ export async function findOrCreateCustomer(email: string, name?: string | null) 
   });
 }
 
-export async function getBillingOverview(email: string) {
+type BillingLookupOptions = {
+  customerId?: string | null;
+  subscriptionId?: string | null;
+};
+
+export async function getBillingOverview(email: string, options?: BillingLookupOptions) {
   const stripe = getStripeServer();
+
+  const directCustomer = options?.customerId
+    ? await stripe.customers.retrieve(options.customerId).catch(() => null)
+    : null;
+  const customerFromId =
+    directCustomer && !("deleted" in directCustomer && directCustomer.deleted) ? directCustomer : null;
+
+  if (customerFromId) {
+    return {
+      customer: customerFromId,
+      subscriptions: await listSubscriptionsForCustomer(
+        stripe,
+        customerFromId.id,
+        options?.subscriptionId,
+      ),
+    };
+  }
+
   const customers = await stripe.customers.list({
     email,
-    limit: 1,
+    limit: 10,
   });
-  const customer = customers.data[0] ?? null;
+  const rankedCustomers = customers.data.filter((customer) => !customer.deleted);
+
+  for (const customer of rankedCustomers) {
+    const subscriptions = await listSubscriptionsForCustomer(
+      stripe,
+      customer.id,
+      options?.subscriptionId,
+    );
+
+    if (subscriptions.length > 0) {
+      return {
+        customer,
+        subscriptions,
+      };
+    }
+  }
+
+  const customer = rankedCustomers[0] ?? null;
 
   if (!customer) {
     return {
@@ -72,15 +114,15 @@ export async function getBillingOverview(email: string) {
     };
   }
 
-  const subscriptions = await stripe.subscriptions.list({
-    customer: customer.id,
-    limit: 10,
-    status: "all",
-  });
+  const subscriptions = await listSubscriptionsForCustomer(
+    stripe,
+    customer.id,
+    options?.subscriptionId,
+  );
 
   return {
     customer,
-    subscriptions: subscriptions.data,
+    subscriptions,
   };
 }
 
@@ -94,7 +136,10 @@ export async function syncBillingStateForUser(
   }
 
   try {
-    const overview = await getBillingOverview(email);
+    const overview = await getBillingOverview(email, {
+      customerId: fallbackState.billing.customerId,
+      subscriptionId: fallbackState.billing.subscriptionId,
+    });
     const nextBilling = toBillingState(overview.subscriptions, fallbackState.billing, email);
 
     if (isSameBillingState(fallbackState.billing, nextBilling)) {
@@ -108,6 +153,35 @@ export async function syncBillingStateForUser(
   } catch {
     return fallbackState;
   }
+}
+
+async function listSubscriptionsForCustomer(
+  stripe: Stripe,
+  customerId: string,
+  preferredSubscriptionId?: string | null,
+) {
+  const subscriptions = await stripe.subscriptions.list({
+    customer: customerId,
+    limit: 10,
+    status: "all",
+  });
+
+  if (!preferredSubscriptionId) {
+    return subscriptions.data;
+  }
+
+  const preferred = subscriptions.data.find(
+    (subscription) => subscription.id === preferredSubscriptionId,
+  );
+
+  if (!preferred) {
+    return subscriptions.data;
+  }
+
+  return [
+    preferred,
+    ...subscriptions.data.filter((subscription) => subscription.id !== preferredSubscriptionId),
+  ];
 }
 
 export function getPriceIdForPlan(plan: PlanId) {

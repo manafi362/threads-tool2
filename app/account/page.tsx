@@ -16,7 +16,12 @@ export default async function AccountPage() {
   const storedState = await readState(user.id).catch(() => fallbackState);
   const prototypeState = await syncBillingStateForUser(user.id, user.email, storedState);
   const overview =
-    hasStripeEnv() && user.email ? await getBillingOverview(user.email).catch(() => null) : null;
+    hasStripeEnv() && user.email
+      ? await getBillingOverview(user.email, {
+          customerId: prototypeState.billing.customerId,
+          subscriptionId: prototypeState.billing.subscriptionId,
+        }).catch(() => null)
+      : null;
   const subscriptions = overview?.subscriptions ?? [];
   const billing = prototypeState.billing;
 
