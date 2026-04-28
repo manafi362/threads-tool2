@@ -21,6 +21,7 @@ export async function POST(request: Request) {
     const next = await updateState(user.id, (state) => ({
       ...state,
       crawledPages: [],
+      knowledgeChunks: [],
       conversations: [],
       crawl: {
         ...state.crawl,

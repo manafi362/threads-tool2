@@ -4,7 +4,12 @@ import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import { hasSupabaseAdminEnv, hasSupabaseEnv } from "./env";
-import { DEFAULT_TOKEN, PrototypeState, createDefaultState } from "./prototype";
+import {
+  buildKnowledgeChunks,
+  DEFAULT_TOKEN,
+  PrototypeState,
+  createDefaultState,
+} from "./prototype";
 import { createSupabaseAdminClient } from "./supabase/admin";
 import { createSupabaseServerClient } from "./supabase/server";
 
@@ -248,26 +253,35 @@ async function getSupabaseStoreClient() {
 }
 
 function mergeWithDefaultState(parsed: PrototypeState) {
+  const defaults = createDefaultState();
+  const crawledPages = parsed.crawledPages ?? defaults.crawledPages;
+  const knowledgeChunks =
+    parsed.knowledgeChunks && parsed.knowledgeChunks.length > 0
+      ? parsed.knowledgeChunks
+      : buildKnowledgeChunks(crawledPages);
+
   return {
-    ...createDefaultState(),
+    ...defaults,
     ...parsed,
+    crawledPages,
+    knowledgeChunks,
     crawl: {
-      ...createDefaultState().crawl,
+      ...defaults.crawl,
       ...parsed.crawl,
     },
     billing: {
-      ...createDefaultState().billing,
+      ...defaults.billing,
       ...parsed.billing,
     },
     siteVerification: {
-      ...createDefaultState().siteVerification,
+      ...defaults.siteVerification,
       ...parsed.siteVerification,
     },
     widget: {
-      ...createDefaultState().widget,
+      ...defaults.widget,
       ...parsed.widget,
     },
-    auditLogs: parsed.auditLogs ?? createDefaultState().auditLogs,
+    auditLogs: parsed.auditLogs ?? defaults.auditLogs,
   };
 }
 

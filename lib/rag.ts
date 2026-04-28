@@ -1,14 +1,22 @@
 import "server-only";
 
-import { UNKNOWN_ANSWER, type CrawledPage, type PrototypeState, tokenize } from "./prototype";
+import {
+  UNKNOWN_ANSWER,
+  buildKnowledgeChunks,
+  type KnowledgeChunk,
+  type PrototypeState,
+  tokenize,
+} from "./prototype";
 
 export async function answerQuestion(state: PrototypeState, question: string) {
-  const hits = rankPages(state.crawledPages, question).slice(0, 3);
+  const knowledgeBase =
+    state.knowledgeChunks.length > 0 ? state.knowledgeChunks : buildKnowledgeChunks(state.crawledPages);
+  const hits = rankChunks(knowledgeBase, question).slice(0, 4);
   const selectedHits =
     hits.length > 0 && hits[0].score >= 2
       ? hits
-      : isGenericSiteQuestion(question) && state.crawledPages.length > 0
-        ? state.crawledPages.slice(0, 2).map((page) => ({ page, score: 1 }))
+      : isGenericSiteQuestion(question) && knowledgeBase.length > 0
+        ? knowledgeBase.slice(0, 2).map((chunk) => ({ chunk, score: 1 }))
         : [];
 
   if (selectedHits.length === 0) {
@@ -20,8 +28,8 @@ export async function answerQuestion(state: PrototypeState, question: string) {
 
   const context = selectedHits
     .map(
-      ({ page }, index) =>
-        `Source ${index + 1}\nURL: ${page.url}\nTitle: ${page.title}\nContent: ${page.content.slice(0, 1200)}`,
+      ({ chunk }, index) =>
+        `Source ${index + 1}\nURL: ${chunk.url}\nTitle: ${chunk.title}\nExcerpt: ${chunk.excerpt}\nContent: ${chunk.content.slice(0, 1200)}`,
     )
     .join("\n\n");
 
@@ -29,36 +37,51 @@ export async function answerQuestion(state: PrototypeState, question: string) {
 
   return {
     answer,
-    sources: selectedHits.map(({ page }) => ({
-      url: page.url,
-      title: page.title,
-    })),
+    sources: uniqueSources(selectedHits.map(({ chunk }) => chunk)),
   };
 }
 
-function rankPages(pages: CrawledPage[], question: string) {
+function rankChunks(chunks: KnowledgeChunk[], question: string) {
   const tokens = tokenize(question);
 
-  return pages
-    .map((page) => ({
-      page,
-      score: scorePage(page, tokens),
+  return chunks
+    .map((chunk) => ({
+      chunk,
+      score: scoreChunk(chunk, tokens),
     }))
     .filter((hit) => hit.score > 0)
     .sort((left, right) => right.score - left.score);
 }
 
-function scorePage(page: CrawledPage, tokens: string[]) {
-  const haystack = `${page.title} ${page.excerpt} ${page.content}`.toLowerCase();
+function scoreChunk(chunk: KnowledgeChunk, tokens: string[]) {
+  const haystack = `${chunk.title} ${chunk.excerpt} ${chunk.content}`.toLowerCase();
   return tokens.reduce((score, token) => {
     if (!haystack.includes(token)) {
       return score;
     }
 
-    const titleBonus = page.title.toLowerCase().includes(token) ? 2 : 0;
-    const excerptBonus = page.excerpt.toLowerCase().includes(token) ? 1 : 0;
+    const titleBonus = chunk.title.toLowerCase().includes(token) ? 2 : 0;
+    const excerptBonus = chunk.excerpt.toLowerCase().includes(token) ? 1 : 0;
     return score + 2 + titleBonus + excerptBonus;
   }, 0);
+}
+
+function uniqueSources(chunks: KnowledgeChunk[]) {
+  const seen = new Set<string>();
+
+  return chunks.flatMap((chunk) => {
+    if (seen.has(chunk.url)) {
+      return [];
+    }
+
+    seen.add(chunk.url);
+    return [
+      {
+        url: chunk.url,
+        title: chunk.title,
+      },
+    ];
+  });
 }
 
 function isGenericSiteQuestion(question: string) {

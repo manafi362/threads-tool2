@@ -3,7 +3,13 @@ import Link from "next/link";
 import { getOptionalUser } from "@/lib/auth";
 import { PLAN_CATALOG } from "@/lib/billing";
 import { hasStripeEnv, hasSupabaseEnv } from "@/lib/env";
-import { buildPageMetadata, getSiteUrl, SITE_DESCRIPTION, SITE_NAME, SITE_TITLE } from "@/lib/site-config";
+import {
+  buildPageMetadata,
+  getSiteUrl,
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_TITLE,
+} from "@/lib/site-config";
 import BillingButton from "./components/billing-button";
 import GoogleSignIn from "./components/google-sign-in";
 
@@ -54,10 +60,10 @@ export default async function HomePage() {
       <section className="hero-grid">
         <div className="hero-copy">
           <span className="hero-badge">URL-Based Chatbot SaaS</span>
-          <h1>URLを登録するだけで、サイト専用チャットボットを公開できます。</h1>
+          <h1>URLを入れるだけで、RAG対応の自社サイト専用AIチャットを公開。</h1>
           <p className="hero-lead">
-            サイト制作者だけが所有確認を通したうえでチャットボットを設置し、訪問者はその内容に沿って質問できます。
-            URL登録、所有確認、クロール、埋め込みコード発行、課金管理までをひとつの管理画面で進められます。
+            公開中のWebサイトを取り込み、RAGで内容に沿って回答するAIチャットを最短数分で設置できます。
+            FAQを一から作らなくても、既存サイトにコードを1つ追加するだけで始められます。
           </p>
 
           <div className="hero-actions">
@@ -73,79 +79,70 @@ export default async function HomePage() {
             ) : authReady ? (
               <>
                 <GoogleSignIn fullWidth={false} />
-                <Link className="secondary-button" href="/login">
-                  ログインページへ
+                <Link className="secondary-button" href="/site-guide">
+                  デモを見る
                 </Link>
               </>
             ) : (
               <>
                 <Link className="primary-button" href="/login">
-                  ログインして始める
+                  無料で試す
                 </Link>
-                <Link className="secondary-button" href="#pricing">
-                  料金プランを見る
+                <Link className="secondary-button" href="/site-guide">
+                  デモを見る
                 </Link>
               </>
             )}
           </div>
 
           <div className="metric-grid">
-            <Metric title="認証" value="Googleログイン" />
-            <Metric title="課金" value="Stripe連携" />
-            <Metric title="公開" value="埋め込みコード発行" />
+            <Metric title="導入" value="最短3分" />
+            <Metric title="設置" value="1タグで埋め込み" />
+            <Metric title="公開" value="サイト所有確認つき" />
           </div>
         </div>
 
         <div className="hero-aside">
           <div className="setup-card">
-            <h2>導入の流れ</h2>
+            <h2>3ステップで公開できます</h2>
             <ol>
-              <li>Googleでログイン</li>
-              <li>サイトURLを登録</li>
-              <li>所有確認とクロール</li>
-              <li>埋め込みコードを設置</li>
+              <li>1. URLを登録してサイト所有確認</li>
+              <li>2. クロールしてRAGコンテキストを作成</li>
+              <li>3. 埋め込みコードを設置して公開</li>
             </ol>
-          </div>
-
-          <div className="status-card">
-            <h2>このサービスでできること</h2>
-            <ReadinessRow
-              title="サイト内容に沿った回答"
-              detail="登録したURLの内容をもとに、FAQだけでなくサイト専用の案内チャットとして活用できます。"
-            />
-            <ReadinessRow
-              title="所有確認つきの公開"
-              detail="対象サイトの所有確認が終わったユーザーだけが、公開用の埋め込みコードを取得できます。"
-            />
-            <ReadinessRow
-              title="課金と運用を一元管理"
-              detail="アカウント画面から無料トライアル、契約状況の確認、Billing Portal での管理まで行えます。"
-            />
+            <p className="hero-lead">
+              デモページでは、RAGでサイト内容を回答する流れと、実際の埋め込みイメージをそのまま確認できます。
+            </p>
+            <div className="hero-actions">
+              <Link className="secondary-button" href="/site-guide">
+                デモページを見る
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
       <section className="value-grid">
         <ValueCard
-          title="サイト制作者だけが公開可能"
-          body="所有確認トークンを対象サイトへ設置できた場合だけ、公開チャットボットの利用とクロールを許可します。"
+          title="URL登録だけでRAG対応"
+          body="公開ページを取り込み、回答の土台になるRAGコンテキストを自動で作成します。"
         />
         <ValueCard
-          title="安全確認つきのクロール"
-          body="危険URL判定、内部ネットワーク遮断、危険な拡張子や管理系パスの拒否など、公開前提の安全対策を組み込んでいます。"
+          title="既存サイトに後付け"
+          body="サイトを作り直さなくても、埋め込みコードを1つ追加するだけで設置できます。"
         />
         <ValueCard
-          title="運用しやすい管理画面"
-          body="クロール状況、所有確認、チャットプレビュー、埋め込みコード、課金状態をひとつの画面で確認できます。"
+          title="運用しながら改善"
+          body="会話ログの確認と再クロールで、回答精度を継続的に改善できます。"
         />
       </section>
 
       <section className="pricing-section" id="pricing">
         <div className="section-copy">
           <span className="section-label">Pricing</span>
-          <h2>公開前の検証から運用開始まで進めやすい料金プラン</h2>
+          <h2>小さく始めて、必要に応じて拡張できる料金プラン</h2>
           <p>
-            まずは無料トライアル付きの Starter から始めて、複数サイト運用や継続改善が必要になったら Growth に移行できます。
+            まずはStarterで1サイトから導入し、複数案件や複数サイトの運用が必要になったらGrowthへ移行できます。
           </p>
         </div>
 
@@ -156,7 +153,11 @@ export default async function HomePage() {
                 <p className="plan-kicker">{plan.name.toUpperCase()}</p>
                 <h3>{plan.priceLabel}</h3>
                 {"trialLabel" in plan ? <p className="trial-chip">{plan.trialLabel}</p> : null}
-                <p className="plan-description">{plan.description}</p>
+                <p className="plan-description">
+                  {plan.id === "starter"
+                    ? "まずは1サイトで試したい方向けのプランです。自社サイトへの初回導入や、小規模サイトでの運用に向いています。"
+                    : "複数サイトの運用や、本格活用を想定したプランです。制作会社や複数案件の運用にも向いています。"}
+                </p>
               </div>
               <ul className="plan-features">
                 {plan.features.map((feature) => (
@@ -167,15 +168,15 @@ export default async function HomePage() {
                 <BillingButton
                   endpoint="/api/billing/checkout"
                   plan={plan.id}
-                  label={`${plan.name}を始める`}
+                  label={plan.id === "starter" ? "Starterで始める" : "Growthを選ぶ"}
                 />
               ) : user ? (
                 <Link className="secondary-button" href="/account">
-                  アカウント画面で設定する
+                  アカウントで設定する
                 </Link>
               ) : (
                 <Link className="secondary-button" href="/login">
-                  ログインしてプランを見る
+                  無料で試す
                 </Link>
               )}
             </article>
@@ -191,18 +192,6 @@ function Metric({ title, value }: { title: string; value: string }) {
     <div className="metric-card">
       <p>{title}</p>
       <strong>{value}</strong>
-    </div>
-  );
-}
-
-function ReadinessRow({ title, detail }: { title: string; detail: string }) {
-  return (
-    <div className="status-row">
-      <div>
-        <h3>{title}</h3>
-        <p>{detail}</p>
-      </div>
-      <span>利用可能</span>
     </div>
   );
 }

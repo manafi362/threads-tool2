@@ -58,30 +58,35 @@ export default async function RootLayout({
         <div className="flex min-h-screen flex-col">
           <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/90 backdrop-blur">
             <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 lg:px-8">
-              <Link href="/" className="text-lg font-semibold tracking-tight text-slate-950">
-                {SITE_NAME}
-              </Link>
+              <div className="flex flex-col">
+                <Link href="/" className="text-lg font-semibold tracking-tight text-slate-950">
+                  {SITE_NAME}
+                </Link>
+                <p className="text-xs text-slate-500">
+                  URL登録とRAGで、埋め込みAIチャットを公開
+                </p>
+              </div>
               <nav className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
                 <Link href="/" className="transition hover:text-slate-950">
-                  Home
+                  ホーム
                 </Link>
                 <Link href="/dashboard" className="transition hover:text-slate-950">
-                  Dashboard
+                  ダッシュボード
                 </Link>
                 <Link href="/site-guide" className="transition hover:text-slate-950">
-                  Site Guide
+                  デモ
                 </Link>
                 <Link href="/account" className="transition hover:text-slate-950">
-                  Account
+                  アカウント
                 </Link>
                 <Link href="/privacy" className="transition hover:text-slate-950">
-                  Privacy
+                  プライバシー
                 </Link>
                 <Link href="/legal" className="transition hover:text-slate-950">
                   特商法表記
                 </Link>
                 <Link href="/contact" className="transition hover:text-slate-950">
-                  Contact
+                  お問い合わせ
                 </Link>
                 {user ? (
                   <form action={signOutAction}>
@@ -89,7 +94,7 @@ export default async function RootLayout({
                       type="submit"
                       className="rounded-full border border-slate-300 px-4 py-2 font-medium text-slate-800 transition hover:bg-slate-50"
                     >
-                      Sign out
+                      ログアウト
                     </button>
                   </form>
                 ) : (
@@ -97,7 +102,7 @@ export default async function RootLayout({
                     href="/login"
                     className="rounded-full bg-slate-950 px-4 py-2 font-medium text-white transition hover:bg-slate-800"
                   >
-                    Login
+                    無料で試す
                   </Link>
                 )}
               </nav>
@@ -109,7 +114,7 @@ export default async function RootLayout({
           <footer className="border-t border-slate-200 bg-white px-6 py-6 text-sm text-slate-600">
             <div className="mx-auto flex max-w-7xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <p>© 2026 {SITE_NAME}</p>
-              <p>URLクロール、チャット回答、Stripe課金までをまとめた販売向けアプリ</p>
+              <p>URL登録、RAG、埋め込みAIチャット公開までをまとめて行える日本語対応SaaS</p>
             </div>
           </footer>
         </div>

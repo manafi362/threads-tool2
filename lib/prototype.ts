@@ -68,6 +68,17 @@ export type CrawledPage = {
   crawledAt: string;
 };
 
+export type KnowledgeChunk = {
+  id: string;
+  pageId: string;
+  url: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  index: number;
+  tokenCount: number;
+};
+
 export type ChatEntry = {
   role: "user" | "assistant";
   content: string;
@@ -110,6 +121,7 @@ export type PrototypeState = {
   siteVerification: SiteVerificationState;
   widget: WidgetSettings;
   crawledPages: CrawledPage[];
+  knowledgeChunks: KnowledgeChunk[];
   conversations: ConversationLog[];
   auditLogs: AuditLogEntry[];
 };
@@ -156,6 +168,7 @@ export function createDefaultState(): PrototypeState {
       y: DEFAULT_WIDGET_OFFSET,
     },
     crawledPages: [],
+    knowledgeChunks: [],
     conversations: [],
     auditLogs: [],
   };
@@ -202,4 +215,50 @@ export function tokenize(value: string) {
   }
 
   return [...new Set([...spacedTokens, ...ngrams])];
+}
+
+const CHUNK_SIZE = 900;
+const CHUNK_OVERLAP = 180;
+
+export function buildKnowledgeChunks(pages: CrawledPage[]): KnowledgeChunk[] {
+  return pages.flatMap((page) => chunkPage(page));
+}
+
+function chunkPage(page: CrawledPage) {
+  const chunks: KnowledgeChunk[] = [];
+  const content = page.content.trim();
+
+  if (!content) {
+    return chunks;
+  }
+
+  let start = 0;
+  let index = 0;
+
+  while (start < content.length) {
+    const end = Math.min(content.length, start + CHUNK_SIZE);
+    const slice = content.slice(start, end).trim();
+
+    if (slice) {
+      chunks.push({
+        id: `${page.id}:${index}`,
+        pageId: page.id,
+        url: page.url,
+        title: page.title,
+        excerpt: slice.slice(0, 180),
+        content: slice,
+        index,
+        tokenCount: tokenize(slice).length,
+      });
+    }
+
+    if (end >= content.length) {
+      break;
+    }
+
+    start = Math.max(end - CHUNK_OVERLAP, start + 1);
+    index += 1;
+  }
+
+  return chunks;
 }

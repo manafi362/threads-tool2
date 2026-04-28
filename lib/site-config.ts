@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const SITE_NAME = "URLベースチャットボット";
-export const SITE_TITLE = "URLを登録するだけでサイト専用チャットボットを公開できるSaaS";
+export const SITE_TITLE = "URL登録とRAGでサイト専用AIチャットを公開できるSaaS";
 export const SITE_DESCRIPTION =
-  "URLベースチャットボットは、サイトURLの登録・所有確認・クロール・埋め込みコード発行までをまとめて行える日本語対応のチャットボットSaaSです。";
+  "URLベースチャットボットは、サイトURLの登録・所有確認・クロール・RAG登録・埋め込みコード発行までをまとめて行える日本語対応のAIチャットボットSaaSです。";
 
 export function getSiteUrl() {
   const value = process.env.NEXT_PUBLIC_APP_URL?.trim();

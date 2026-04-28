@@ -7,6 +7,7 @@ import { assertSafeCrawlTarget } from "../../../../lib/content-safety";
 import { crawlSite } from "../../../../lib/crawler";
 import { assertPaidAccess } from "../../../../lib/entitlements";
 import {
+  buildKnowledgeChunks,
   clampCoordinate,
   normalizeHexColor,
   type PrototypeState,
@@ -133,10 +134,12 @@ export async function POST(request: Request) {
     await writeState(runningState, user.id);
 
     const { pages, warnings } = await crawlSite(targetUrl.toString(), payload.mode);
+    const knowledgeChunks = buildKnowledgeChunks(pages);
     const nextState = appendAuditLog(
       {
         ...runningState,
         crawledPages: pages,
+        knowledgeChunks,
         crawl: {
           ...runningState.crawl,
           status: "succeeded",
