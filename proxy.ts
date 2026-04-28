@@ -2,9 +2,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 import {
-  hasAdminBasicAuthConfigured,
   hasIpAllowlistConfigured,
-  hasValidAdminBasicAuth,
   isClientIpAllowed,
 } from "./lib/admin-access";
 import { getClientIp } from "./lib/request-ip";
@@ -60,15 +58,6 @@ export function proxy(request: NextRequest) {
         },
         { status: 403 },
       );
-    }
-
-    if (hasAdminBasicAuthConfigured() && !hasValidAdminBasicAuth(request.headers)) {
-      return new NextResponse("Authentication required.", {
-        status: 401,
-        headers: {
-          "WWW-Authenticate": 'Basic realm="URL Based Chatbot Admin"',
-        },
-      });
     }
 
     const adminRateLimit = takeRateLimit(`admin:${clientIp}:${pathname}`, 60, 60 * 1000);

@@ -6,7 +6,6 @@ This project includes application and operational controls intended to support p
 
 - Admin routes are protected by authentication in [proxy.ts](./proxy.ts).
 - Optional IP allowlisting is supported with `ADMIN_ALLOWED_IPS`.
-- Optional extra Basic authentication is supported with `ADMIN_BASIC_AUTH_USERNAME` and `ADMIN_BASIC_AUTH_PASSWORD`.
 - Login and sensitive API routes are rate-limited in:
   - [app/auth/callback/route.ts](./app/auth/callback/route.ts)
   - [app/api/billing/checkout/route.ts](./app/api/billing/checkout/route.ts)
@@ -34,12 +33,10 @@ This project includes application and operational controls intended to support p
 
 ## Required production configuration
 
-To enforce admin access restrictions in production, configure at least one of the following in Vercel:
+To enforce admin access restrictions in production, configure an IP allowlist in Vercel:
 
 ```env
 ADMIN_ALLOWED_IPS=203.0.113.10,198.51.100.8
-ADMIN_BASIC_AUTH_USERNAME=admin
-ADMIN_BASIC_AUTH_PASSWORD=replace-with-a-strong-random-password
 ```
 
 ## Operational items outside the codebase
