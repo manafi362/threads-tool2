@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import Link from "next/link";
 
 import { signOutAction } from "./actions/auth";
@@ -114,6 +115,7 @@ export default async function RootLayout({
         </div>
 
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
